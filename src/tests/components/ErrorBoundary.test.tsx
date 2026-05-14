@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event'
 import ErrorBoundary from '@/components/common/ErrorBoundary'
 import { render, screen } from '@/tests/test-utils'
 
+vi.mock('@sentry/react', () => ({ captureException: vi.fn() }))
+
 // Component that throws an error for testing
 function ThrowError({ shouldThrow, message }: { shouldThrow: boolean; message?: string }) {
   if (shouldThrow) {
