@@ -47,7 +47,7 @@
       "biome check --write --unsafe",
       "biome format --write"
     ],
-    "*.{json,css,md}": [
+    "*.{json,css}": [
       "biome format --write"
     ]
   },
