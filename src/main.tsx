@@ -1,7 +1,7 @@
+import { registerSW } from 'virtual:pwa-register'
 import * as Sentry from '@sentry/react'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { registerSW } from 'virtual:pwa-register'
 import { Providers } from '@/app/providers.tsx'
 import './index.css'
 import App from './App.tsx'

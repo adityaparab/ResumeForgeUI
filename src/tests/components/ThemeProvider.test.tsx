@@ -1,9 +1,9 @@
 /// <reference types="vitest/globals" />
 
-import { render } from '@/tests/test-utils'
 import { store } from '@/app/store'
-import { setTheme } from '@/stores/uiSlice'
 import ThemeProvider from '@/components/common/ThemeProvider'
+import { setTheme } from '@/stores/uiSlice'
+import { render } from '@/tests/test-utils'
 
 describe('ThemeProvider', () => {
   afterEach(() => {

@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import authReducer from '@/stores/authSlice'
 import uiReducer, {
   addActiveJob,
