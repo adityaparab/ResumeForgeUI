@@ -126,6 +126,7 @@ export const StructuredContentSchema = z.object({
 })
 
 // --- Resume status ---
+export type StructuredContent = z.infer<typeof StructuredContentSchema>
 
 export const ResumeStatusSchema = z.enum(['queued', 'processing', 'completed', 'failed'])
 

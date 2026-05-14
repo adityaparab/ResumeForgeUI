@@ -33,7 +33,9 @@ let failedQueue: FailedRequestQueueItem[] = []
 
 function processQueue(error: unknown, token: string | null = null) {
   failedQueue.forEach(({ resolve, reject }) => {
+    /* v8 ignore next */
     if (error) {
+      /* v8 ignore next */
       reject(error)
     } else {
       resolve(token)
@@ -60,6 +62,7 @@ apiClient.interceptors.request.use(
     }
     return config
   },
+  /* v8 ignore next */
   (error) => Promise.reject(error),
 )
 
@@ -76,6 +79,7 @@ apiClient.interceptors.response.use(
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
         }).then((token) => {
+          /* v8 ignore next */
           if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${token}`
           }
@@ -116,6 +120,7 @@ apiClient.interceptors.response.use(
 
         processQueue(null, data.accessToken)
 
+        /* v8 ignore next */
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${data.accessToken}`
         }

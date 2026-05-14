@@ -1,7 +1,7 @@
 import { Bell, LogOut } from 'lucide-react'
 import { useAppSelector } from '@/app/hooks'
 import { Button } from '@/components/ui/button'
-import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useLogoutMutation } from '@/features/auth/hooks/useAuthMutations'
 import { selectCurrentUser } from '@/stores/authSlice'
 
 interface HeaderProps {
@@ -10,7 +10,7 @@ interface HeaderProps {
 
 export default function Header({ onToggleSidebar }: HeaderProps) {
   const user = useAppSelector(selectCurrentUser)
-  const { logout } = useAuth()
+  const logoutMutation = useLogoutMutation()
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 lg:px-6">
@@ -47,7 +47,13 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
 
         <span className="text-muted-foreground hidden text-sm md:inline">{user?.email}</span>
 
-        <Button variant="ghost" size="icon" onClick={logout} aria-label="Sign out">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => logoutMutation.mutate()}
+          disabled={logoutMutation.isPending}
+          aria-label="Sign out"
+        >
           <LogOut className="h-5 w-5" />
         </Button>
       </div>

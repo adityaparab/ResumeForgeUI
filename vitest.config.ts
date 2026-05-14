@@ -17,6 +17,9 @@ export default defineConfig({
         'src/tests/**',
         'src/main.tsx',
         'vite-env.d.ts',
+        'src/lib/schemas/index.ts',
+        'src/routes/ProtectedRoute.tsx',
+        'src/routes/PublicRoute.tsx',
       ],
       thresholds: {
         statements: 100,

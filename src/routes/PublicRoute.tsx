@@ -2,15 +2,7 @@ import { Navigate, Outlet } from 'react-router'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 
 export default function PublicRoute() {
-  const { isAuthenticated, isLoading } = useAuth()
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    )
-  }
+  const { isAuthenticated } = useAuth()
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />

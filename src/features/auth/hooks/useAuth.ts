@@ -1,11 +1,12 @@
-// Placeholder hook - will be implemented in Issue #10
+import { useAppSelector } from '@/app/hooks'
+import { selectCurrentUser, selectIsAuthenticated } from '@/stores/authSlice'
+
 export function useAuth() {
+  const user = useAppSelector(selectCurrentUser)
+  const isAuthenticated = useAppSelector(selectIsAuthenticated)
+
   return {
-    isAuthenticated: false,
-    isLoading: false,
-    user: null as null | { email: string },
-    login: async (_email: string, _password: string) => {},
-    register: async (_email: string, _password: string) => {},
-    logout: () => {},
+    user,
+    isAuthenticated,
   }
 }

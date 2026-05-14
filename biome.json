@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!**/dist", "!**/node_modules", "!**/.yarn"]
+    "includes": ["**", "!**/dist", "!**/node_modules", "!**/.yarn", "!**/coverage"]
   },
   "formatter": {
     "enabled": true,
