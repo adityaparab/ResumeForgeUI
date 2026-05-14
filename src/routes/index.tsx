@@ -1,25 +1,32 @@
+import { lazy, Suspense } from 'react'
 import { createBrowserRouter, type RouteObject } from 'react-router'
+import LoadingSpinner from '@/components/common/LoadingSpinner'
 import MainLayout from '@/components/layout/MainLayout'
-import AnalysisList from '@/pages/AnalysisList'
-import AnalysisResult from '@/pages/AnalysisResult'
-import AnalysisStream from '@/pages/AnalysisStream'
-import Dashboard from '@/pages/Dashboard'
-import Login from '@/pages/Login'
-import NotFound from '@/pages/NotFound'
-import Register from '@/pages/Register'
-import ResumeDetail from '@/pages/ResumeDetail'
-import ResumeList from '@/pages/ResumeList'
-import ResumeStream from '@/pages/ResumeStream'
-import Settings from '@/pages/Settings'
 import ProtectedRoute from './ProtectedRoute'
 import PublicRoute from './PublicRoute'
+
+const AnalysisList = lazy(() => import('@/pages/AnalysisList'))
+const AnalysisResult = lazy(() => import('@/pages/AnalysisResult'))
+const AnalysisStream = lazy(() => import('@/pages/AnalysisStream'))
+const Dashboard = lazy(() => import('@/pages/Dashboard'))
+const Login = lazy(() => import('@/pages/Login'))
+const NotFound = lazy(() => import('@/pages/NotFound'))
+const Register = lazy(() => import('@/pages/Register'))
+const ResumeDetail = lazy(() => import('@/pages/ResumeDetail'))
+const ResumeList = lazy(() => import('@/pages/ResumeList'))
+const ResumeStream = lazy(() => import('@/pages/ResumeStream'))
+const Settings = lazy(() => import('@/pages/Settings'))
+
+function withSuspense(element: React.ReactNode) {
+  return <Suspense fallback={<LoadingSpinner />}>{element}</Suspense>
+}
 
 const routes: RouteObject[] = [
   {
     element: <PublicRoute />,
     children: [
-      { path: '/login', element: <Login /> },
-      { path: '/register', element: <Register /> },
+      { path: '/login', element: withSuspense(<Login />) },
+      { path: '/register', element: withSuspense(<Register />) },
     ],
   },
   {
@@ -28,21 +35,21 @@ const routes: RouteObject[] = [
       {
         element: <MainLayout />,
         children: [
-          { index: true, element: <Dashboard /> },
-          { path: 'analysis', element: <AnalysisList /> },
-          { path: 'analysis/stream/:analysisId', element: <AnalysisStream /> },
-          { path: 'analysis/:analysisId', element: <AnalysisResult /> },
-          { path: 'resume', element: <ResumeList /> },
-          { path: 'resume/stream/:resumeId', element: <ResumeStream /> },
-          { path: 'resume/:resumeId', element: <ResumeDetail /> },
-          { path: 'settings', element: <Settings /> },
+          { index: true, element: withSuspense(<Dashboard />) },
+          { path: 'analysis', element: withSuspense(<AnalysisList />) },
+          { path: 'analysis/stream/:analysisId', element: withSuspense(<AnalysisStream />) },
+          { path: 'analysis/:analysisId', element: withSuspense(<AnalysisResult />) },
+          { path: 'resume', element: withSuspense(<ResumeList />) },
+          { path: 'resume/stream/:resumeId', element: withSuspense(<ResumeStream />) },
+          { path: 'resume/:resumeId', element: withSuspense(<ResumeDetail />) },
+          { path: 'settings', element: withSuspense(<Settings />) },
         ],
       },
     ],
   },
   {
     path: '*',
-    element: <NotFound />,
+    element: withSuspense(<NotFound />),
   },
 ]
 
