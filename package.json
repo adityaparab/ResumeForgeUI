@@ -14,12 +14,14 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@base-ui/react": "^1.4.1",
     "@tailwindcss/vite": "^4.3.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.14.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
+    "react-router": "^7.15.1",
     "shadcn": "^4.7.0",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.0",
