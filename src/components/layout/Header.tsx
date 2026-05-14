@@ -1,8 +1,9 @@
-import { Bell, LogOut } from 'lucide-react'
-import { useAppSelector } from '@/app/hooks'
+import { Bell, LogOut, Moon, Sun } from 'lucide-react'
+import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { Button } from '@/components/ui/button'
 import { useLogoutMutation } from '@/features/auth/hooks/useAuthMutations'
 import { selectCurrentUser } from '@/stores/authSlice'
+import { selectTheme, setTheme } from '@/stores/uiSlice'
 
 interface HeaderProps {
   onToggleSidebar?: () => void
@@ -11,6 +12,12 @@ interface HeaderProps {
 export default function Header({ onToggleSidebar }: HeaderProps) {
   const user = useAppSelector(selectCurrentUser)
   const logoutMutation = useLogoutMutation()
+  const dispatch = useAppDispatch()
+  const theme = useAppSelector(selectTheme)
+
+  function toggleTheme() {
+    dispatch(setTheme(theme === 'dark' ? 'light' : 'dark'))
+  }
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 lg:px-6">
@@ -41,6 +48,15 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </Button>
+
         <Button variant="ghost" size="icon" aria-label="Notifications">
           <Bell className="h-5 w-5" />
         </Button>

@@ -3,6 +3,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import type { ReactNode } from 'react'
 import { Provider as ReduxProvider } from 'react-redux'
 import { Toaster } from 'sonner'
+import ThemeProvider from '@/components/common/ThemeProvider'
 import { store } from './store'
 
 const queryClient = new QueryClient({
@@ -23,6 +24,7 @@ export function Providers({ children }: { children: ReactNode }) {
     <ReduxProvider store={store}>
       <QueryClientProvider client={queryClient}>
         {children}
+        <ThemeProvider />
         <Toaster richColors position="top-right" />
         {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>

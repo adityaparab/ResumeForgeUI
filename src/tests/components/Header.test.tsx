@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { store } from '@/app/store'
 import Header from '@/components/layout/Header'
 import { logout, setCredentials } from '@/stores/authSlice'
+import { setTheme } from '@/stores/uiSlice'
 import { render } from '@/tests/test-utils'
 
 const mockUser = { id: 'user-1', email: 'user@example.com' }
@@ -56,5 +57,17 @@ describe('Header', () => {
     await user.click(screen.getByRole('button', { name: /sign out/i }))
     // logout mutation fires, no error thrown
     store.dispatch(logout())
+  })
+
+  it('toggles theme when dark mode button is clicked', async () => {
+    const user = userEvent.setup()
+    // Start from light mode → toggles to dark
+    store.dispatch(setTheme('light'))
+    render(<Header />)
+    expect(screen.getByRole('button', { name: /switch to dark mode/i })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /switch to dark mode/i }))
+    // Now in dark mode → toggles to light
+    await user.click(screen.getByRole('button', { name: /switch to light mode/i }))
+    expect(screen.getByRole('button', { name: /switch to dark mode/i })).toBeInTheDocument()
   })
 })

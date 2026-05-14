@@ -1,6 +1,11 @@
 import '@testing-library/jest-dom'
 import { server } from './mocks/server'
 
+// Mock virtual:pwa-register (not available in test environment)
+vi.mock('virtual:pwa-register', () => ({
+  registerSW: vi.fn(),
+}))
+
 // Mock EventSource (not available in jsdom)
 class MockEventSource {
   static instances: MockEventSource[] = []
@@ -43,6 +48,21 @@ class MockEventSource {
 Object.defineProperty(window, 'EventSource', {
   writable: true,
   value: MockEventSource,
+})
+
+// Mock window.matchMedia (not available in jsdom)
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  }),
 })
 
 // MSW lifecycle - vitest globals are available in setup files
