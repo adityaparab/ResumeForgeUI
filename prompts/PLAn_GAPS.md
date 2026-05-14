@@ -1,5 +1,6 @@
 ## Gaps
-These are the gaps in existing project
+These are the gaps in existing project.
+- Refer to files `README.md`, `AGENTS.md`, `prompts/PLAN.md`, `docs/PROJECT_STRUCTURE.md`, and `TECH_STACK.md` to understand how this project is built and what it is doing.
 
 ### Before you start
 - check for open github issues.
@@ -7,12 +8,13 @@ These are the gaps in existing project
 - When done, mark the issue as done on github and move on to the next one without waiting for permission.
 
 #### Instructions
-- Refer to files `README.md`, `AGENTS.md`, `prompts/PLAN.md`, `docs/PROJECT_STRUCTURE.md`, and `TECH_STACK.md` to understand how this project is built and what it is doing.
+
 - Analyze following stages and create a github issue for each stage. Add detailed description, things to be convered with details, benefits and acceptance criteria.
 - Once all the tasks are created on github, take each task one by one, complete it fully, and then immediately move on to the next task. Do not wait for permission to move to next task.
 - When a task is completed, mark it as done on github before moving to next task. Update `prompts/PLAN.md` accordingly.
 - For any newly added code, the test coverage should be 100% on ALL coverage metrics.
 - e2e tests should be updated to reflect new changes.
+- use `yarn build` to build the project and `yarn test` to run tests.
 
 ##### Stage 1
 - Notification section should show ongoing analysis/resume extraction status
