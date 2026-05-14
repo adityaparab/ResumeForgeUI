@@ -1,7 +1,6 @@
 import type { Page, Route } from '@playwright/test'
 
-// API base URL — must match VITE_API_BASE_URL / constants.ts
-const API = 'http://localhost:3001/api/v1'
+const API = '**/api/**'
 
 const MOCK_USER = { id: 'user-1', email: 'user@example.com' }
 const MOCK_AUTH = {

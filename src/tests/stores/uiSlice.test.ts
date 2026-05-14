@@ -5,10 +5,14 @@ import uiReducer, {
   addActiveJob,
   clearCompletedJobs,
   getStoredTheme,
+  markAllJobNotificationsRead,
+  markJobNotificationRead,
   removeActiveJob,
   selectActiveJobs,
   selectPendingJobs,
   selectTheme,
+  selectUnreadJobCount,
+  selectUnreadJobs,
   setTheme,
   updateJobStatus,
 } from '@/stores/uiSlice'
@@ -45,6 +49,20 @@ describe('uiSlice', () => {
     expect(selectActiveJobs(store.getState())[0]?.status).toBe('completed')
   })
 
+  it('updateJobStatus clears readAt when status changes', () => {
+    const store = makeStore()
+    store.dispatch(addActiveJob({ ...sampleJob, readAt: '2024-01-01T00:00:00Z' }))
+    store.dispatch(updateJobStatus({ id: 'job-1', status: 'completed' }))
+    expect(selectActiveJobs(store.getState())[0]?.readAt).toBeUndefined()
+  })
+
+  it('updateJobStatus keeps readAt when status is unchanged', () => {
+    const store = makeStore()
+    store.dispatch(addActiveJob({ ...sampleJob, readAt: '2024-01-01T00:00:00Z' }))
+    store.dispatch(updateJobStatus({ id: 'job-1', status: 'processing' }))
+    expect(selectActiveJobs(store.getState())[0]?.readAt).toBe('2024-01-01T00:00:00Z')
+  })
+
   it('updateJobStatus does nothing for unknown id', () => {
     const store = makeStore()
     store.dispatch(addActiveJob(sampleJob))
@@ -57,6 +75,32 @@ describe('uiSlice', () => {
     store.dispatch(addActiveJob(sampleJob))
     store.dispatch(removeActiveJob('job-1'))
     expect(selectActiveJobs(store.getState())).toHaveLength(0)
+  })
+
+  it('markJobNotificationRead marks a single notification read', () => {
+    const store = makeStore()
+    store.dispatch(addActiveJob(sampleJob))
+    store.dispatch(markJobNotificationRead({ id: 'job-1', readAt: '2024-01-02T00:00:00Z' }))
+    expect(selectActiveJobs(store.getState())[0]?.readAt).toBe('2024-01-02T00:00:00Z')
+    expect(selectUnreadJobs(store.getState())).toHaveLength(0)
+    expect(selectUnreadJobCount(store.getState())).toBe(0)
+  })
+
+  it('markJobNotificationRead does nothing for unknown ids', () => {
+    const store = makeStore()
+    store.dispatch(addActiveJob(sampleJob))
+    store.dispatch(markJobNotificationRead({ id: 'unknown', readAt: '2024-01-02T00:00:00Z' }))
+    expect(selectActiveJobs(store.getState())[0]?.readAt).toBeUndefined()
+    expect(selectUnreadJobCount(store.getState())).toBe(1)
+  })
+
+  it('markAllJobNotificationsRead marks every job read', () => {
+    const store = makeStore()
+    store.dispatch(addActiveJob({ ...sampleJob, id: 'job-1' }))
+    store.dispatch(addActiveJob({ ...sampleJob, id: 'job-2' }))
+    store.dispatch(markAllJobNotificationsRead('2024-01-02T00:00:00Z'))
+    expect(selectUnreadJobs(store.getState())).toEqual([])
+    expect(selectActiveJobs(store.getState()).every((job) => job.readAt)).toBe(true)
   })
 
   it('clearCompletedJobs removes completed and failed jobs', () => {

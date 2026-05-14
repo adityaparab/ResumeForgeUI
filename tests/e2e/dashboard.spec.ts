@@ -40,8 +40,14 @@ test.describe('Dashboard', () => {
     await expect(page.getByRole('button', { name: /sign out/i })).toBeVisible()
   })
 
+  test('opens notifications empty state from header', async ({ page }) => {
+    await page.getByRole('button', { name: /notifications/i }).click()
+    await expect(page.getByRole('dialog', { name: /notifications/i })).toBeVisible()
+    await expect(page.getByText('No notifications')).toBeVisible()
+  })
+
   test('signs out and redirects to login', async ({ page }) => {
-    await page.route('http://localhost:3001/api/v1/auth/logout', (route) =>
+    await page.route('**/api/**/auth/logout', (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }),
     )
     await page.getByRole('button', { name: /sign out/i }).click()

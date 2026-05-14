@@ -5,23 +5,37 @@ import MainLayout from '@/components/layout/MainLayout'
 import ProtectedRoute from './ProtectedRoute'
 import PublicRoute from './PublicRoute'
 
-const AnalysisList = lazy(() => import('@/pages/AnalysisList'))
-const AnalysisResult = lazy(() => import('@/pages/AnalysisResult'))
-const AnalysisStream = lazy(() => import('@/pages/AnalysisStream'))
-const Dashboard = lazy(() => import('@/pages/Dashboard'))
-const Login = lazy(() => import('@/pages/Login'))
-const NotFound = lazy(() => import('@/pages/NotFound'))
-const Register = lazy(() => import('@/pages/Register'))
-const ResumeDetail = lazy(() => import('@/pages/ResumeDetail'))
-const ResumeList = lazy(() => import('@/pages/ResumeList'))
-const ResumeStream = lazy(() => import('@/pages/ResumeStream'))
-const Settings = lazy(() => import('@/pages/Settings'))
+export const pageLoaders = {
+  AnalysisList: () => import('@/pages/AnalysisList'),
+  AnalysisResult: () => import('@/pages/AnalysisResult'),
+  AnalysisStream: () => import('@/pages/AnalysisStream'),
+  Dashboard: () => import('@/pages/Dashboard'),
+  Login: () => import('@/pages/Login'),
+  NotFound: () => import('@/pages/NotFound'),
+  Register: () => import('@/pages/Register'),
+  ResumeDetail: () => import('@/pages/ResumeDetail'),
+  ResumeList: () => import('@/pages/ResumeList'),
+  ResumeStream: () => import('@/pages/ResumeStream'),
+  Settings: () => import('@/pages/Settings'),
+}
+
+const AnalysisList = lazy(pageLoaders.AnalysisList)
+const AnalysisResult = lazy(pageLoaders.AnalysisResult)
+const AnalysisStream = lazy(pageLoaders.AnalysisStream)
+const Dashboard = lazy(pageLoaders.Dashboard)
+const Login = lazy(pageLoaders.Login)
+const NotFound = lazy(pageLoaders.NotFound)
+const Register = lazy(pageLoaders.Register)
+const ResumeDetail = lazy(pageLoaders.ResumeDetail)
+const ResumeList = lazy(pageLoaders.ResumeList)
+const ResumeStream = lazy(pageLoaders.ResumeStream)
+const Settings = lazy(pageLoaders.Settings)
 
 function withSuspense(element: React.ReactNode) {
   return <Suspense fallback={<LoadingSpinner />}>{element}</Suspense>
 }
 
-const routes: RouteObject[] = [
+export const routes: RouteObject[] = [
   {
     element: <PublicRoute />,
     children: [

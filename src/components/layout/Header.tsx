@@ -1,7 +1,8 @@
-import { Bell, LogOut, Moon, Sun } from 'lucide-react'
+import { LogOut, Moon, Sun } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { Button } from '@/components/ui/button'
 import { useLogoutMutation } from '@/features/auth/hooks/useAuthMutations'
+import { NotificationBell } from '@/features/common/components/NotificationBell'
 import { selectCurrentUser } from '@/stores/authSlice'
 import { selectTheme, setTheme } from '@/stores/uiSlice'
 
@@ -57,9 +58,7 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
           {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </Button>
 
-        <Button variant="ghost" size="icon" aria-label="Notifications">
-          <Bell className="h-5 w-5" />
-        </Button>
+        <NotificationBell />
 
         <span className="text-muted-foreground hidden text-sm md:inline">{user?.email}</span>
 

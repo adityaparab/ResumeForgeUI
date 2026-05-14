@@ -29,7 +29,7 @@ function customRender(ui: ReactElement, options?: CustomRenderOptions) {
       <ReduxProvider store={store}>
         <QueryClientProvider client={queryClient}>
           <MemoryRouter initialEntries={initialEntries ?? ['/']}>{children}</MemoryRouter>
-          <Toaster />
+          <Toaster closeButton />
         </QueryClientProvider>
       </ReduxProvider>
     ),

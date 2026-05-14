@@ -12,6 +12,7 @@ export interface ActiveJob {
   status: JobStatus
   label: string
   createdAt: string
+  readAt?: string
 }
 
 interface UIState {
@@ -45,7 +46,19 @@ const uiSlice = createSlice({
     },
     updateJobStatus: (state, action: PayloadAction<{ id: string; status: JobStatus }>) => {
       const job = state.activeJobs.find((j) => j.id === action.payload.id)
-      if (job) job.status = action.payload.status
+      if (job && job.status !== action.payload.status) {
+        job.status = action.payload.status
+        job.readAt = undefined
+      }
+    },
+    markJobNotificationRead: (state, action: PayloadAction<{ id: string; readAt: string }>) => {
+      const job = state.activeJobs.find((j) => j.id === action.payload.id)
+      if (job) job.readAt = action.payload.readAt
+    },
+    markAllJobNotificationsRead: (state, action: PayloadAction<string>) => {
+      state.activeJobs.forEach((job) => {
+        job.readAt = action.payload
+      })
     },
     removeActiveJob: (state, action: PayloadAction<string>) => {
       state.activeJobs = state.activeJobs.filter((j) => j.id !== action.payload)
@@ -62,10 +75,19 @@ const uiSlice = createSlice({
   },
 })
 
-export const { addActiveJob, updateJobStatus, removeActiveJob, clearCompletedJobs, setTheme } =
-  uiSlice.actions
+export const {
+  addActiveJob,
+  updateJobStatus,
+  markJobNotificationRead,
+  markAllJobNotificationsRead,
+  removeActiveJob,
+  clearCompletedJobs,
+  setTheme,
+} = uiSlice.actions
 
 export const selectActiveJobs = (state: RootState) => state.ui.activeJobs
+export const selectUnreadJobs = (state: RootState) => state.ui.activeJobs.filter((j) => !j.readAt)
+export const selectUnreadJobCount = (state: RootState) => selectUnreadJobs(state).length
 export const selectPendingJobs = (state: RootState) =>
   state.ui.activeJobs.filter((j) => j.status === 'pending' || j.status === 'processing')
 export const selectTheme = (state: RootState) => state.ui.theme
