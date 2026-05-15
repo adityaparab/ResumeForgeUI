@@ -2,7 +2,7 @@
 
 - **Framework:** React 19 + Vite 6 (Turbopack dev server)
 - **Language:** TypeScript 5.6 strict
-- **Styling:** Tailwind CSS v4 + shadcn/ui + clsx + tailwind-merge + @ai-elements
+- **Styling:** React Material UI + MUI X + Emotion. Tailwind CSS v4 and shadcn/ui remain installed only as temporary migration dependencies on the `mui` branch until all screens are rewritten.
 - **Routing:** React Router v7
 - **Forms:** React Hook Form + Zod
 - **State:** Redux Toolkit v2 + TanStack Query v5
