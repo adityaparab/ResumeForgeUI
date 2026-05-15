@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { BarChart3, CheckCircle2, ChevronLeft, XCircle, Zap } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
 import { analysisApi } from '@/lib/api-client'
 import { cn } from '@/lib/utils'
 
@@ -59,7 +61,7 @@ function ScoreBadge({ score }: { score: number }) {
   )
 }
 
-function TagList({ items, color }: { items: string[]; color: string }) {
+function TagList({ items, variant }: { items: string[]; variant: 'success' | 'destructive' }) {
   if (items.length === 0) {
     return <p className="text-sm text-muted-foreground">None</p>
   }
@@ -67,9 +69,9 @@ function TagList({ items, color }: { items: string[]; color: string }) {
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((item) => (
-        <span key={item} className={cn('rounded-full px-3 py-1 text-xs font-medium', color)}>
+        <Badge key={item} variant={variant}>
           {item}
-        </span>
+        </Badge>
       ))}
     </div>
   )
@@ -153,26 +155,25 @@ export default function AnalysisResult() {
           <h1 className="text-2xl font-bold text-foreground">Analysis Result</h1>
           <p className="mt-1 text-sm text-muted-foreground font-mono">{analysisId}</p>
         </div>
-        <span
-          className={cn(
-            'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium',
+        <Badge
+          variant={
             analysis.status === 'completed'
-              ? 'bg-green-100 text-green-800'
+              ? 'success'
               : analysis.status === 'failed'
-                ? 'bg-red-100 text-red-800'
-                : 'bg-yellow-100 text-yellow-800',
-          )}
+                ? 'destructive'
+                : 'warning'
+          }
         >
           {analysis.status}
-        </span>
+        </Badge>
       </div>
 
       {!report && analysis.status !== 'failed' && (
-        <div className="rounded-lg border border-border bg-card px-4 py-6 text-center text-muted-foreground">
+        <Card className="px-4 py-6 text-center text-muted-foreground">
           {analysis.status === 'completed'
             ? 'Completed analysis has no result data available.'
             : 'Analysis is still processing. Check back soon.'}
-        </div>
+        </Card>
       )}
 
       {analysis.status === 'failed' && analysis.error && (
@@ -187,54 +188,54 @@ export default function AnalysisResult() {
       {report && (
         <div className="space-y-6">
           {/* Score card */}
-          <div className="flex items-center gap-8 rounded-xl border border-border bg-card p-6 shadow-sm">
+          <Card className="flex items-center gap-8 p-6">
             <ScoreBadge score={report.score} />
             <div className="flex-1">
               <h2 className="mb-2 text-lg font-semibold text-foreground">Match Score</h2>
               <p className="text-sm text-muted-foreground">{report.summary}</p>
             </div>
             <BarChart3 className="size-10 shrink-0 text-muted-foreground/30" />
-          </div>
+          </Card>
 
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Strengths */}
-            <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <Card className="p-6">
               <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-foreground">
                 <CheckCircle2 className="size-5 text-green-500" />
                 Strengths
               </h2>
               <InsightList items={report.strengths} color="bg-green-500" />
-            </section>
+            </Card>
 
             {/* Gaps */}
-            <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <Card className="p-6">
               <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-foreground">
                 <XCircle className="size-5 text-destructive" />
                 Gaps
               </h2>
               <InsightList items={report.gaps} color="bg-destructive" />
-            </section>
+            </Card>
           </div>
 
           {/* Recommendations */}
-          <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
+          <Card className="p-6">
             <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-foreground">
               <Zap className="size-5 text-yellow-500" />
               Recommendations
             </h2>
             <InsightList items={report.recommendations} color="bg-yellow-500" />
-          </section>
+          </Card>
 
           {/* Keywords */}
           <div className="grid gap-6 lg:grid-cols-2">
-            <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <Card className="p-6">
               <h2 className="mb-4 text-base font-semibold text-foreground">Matched Keywords</h2>
-              <TagList items={report.matchedKeywords} color="bg-green-100 text-green-800" />
-            </section>
-            <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
+              <TagList items={report.matchedKeywords} variant="success" />
+            </Card>
+            <Card className="p-6">
               <h2 className="mb-4 text-base font-semibold text-foreground">Missing Keywords</h2>
-              <TagList items={report.missingKeywords} color="bg-red-100 text-red-800" />
-            </section>
+              <TagList items={report.missingKeywords} variant="destructive" />
+            </Card>
           </div>
         </div>
       )}

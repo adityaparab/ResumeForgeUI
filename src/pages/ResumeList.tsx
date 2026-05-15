@@ -2,6 +2,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { DataTable } from '@/components/ui/data-table'
 import { ResumeUploadForm } from '@/features/resume/components/ResumeUploadForm'
 import { useResumesList } from '@/features/resume/hooks/useResumesList'
@@ -121,21 +122,21 @@ export default function ResumeList() {
 
       <section aria-label="Upload a new resume">
         <h2 className="mb-4 text-lg font-semibold text-foreground">Upload New Resume</h2>
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <Card className="p-6">
           <ResumeUploadForm />
-        </div>
+        </Card>
       </section>
 
       <section aria-label="Your resumes">
         <h2 className="mb-4 text-lg font-semibold text-foreground">Your Resumes</h2>
-        <div className="rounded-xl border border-border bg-card shadow-sm">
+        <Card>
           <DataTable
             columns={columns}
             data={data?.data ?? []}
             isLoading={isLoading}
             emptyMessage="No resumes yet. Upload one above to get started."
           />
-        </div>
+        </Card>
       </section>
     </div>
   )

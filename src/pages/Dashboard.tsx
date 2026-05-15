@@ -1,6 +1,7 @@
 import { BarChart3, FileText, Plus, RefreshCw } from 'lucide-react'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { StatsCard } from '@/features/dashboard/components/StatsCard'
 import { StatsCardSkeleton } from '@/features/dashboard/components/StatsCardSkeleton'
 import { useDashboardStats } from '@/features/dashboard/hooks/useDashboardStats'
@@ -24,13 +25,10 @@ export default function Dashboard() {
               Retry
             </Button>
           )}
-          <Link
-            to="/resume"
-            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
-          >
+          <Button size="lg" render={<Link to="/resume" />}>
             <Plus className="size-4" />
             Upload Resume
-          </Link>
+          </Button>
         </div>
       </div>
 
@@ -72,30 +70,28 @@ export default function Dashboard() {
       <section aria-label="Quick actions">
         <h2 className="mb-4 text-lg font-semibold text-foreground">Quick Actions</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Link
-            to="/resume"
-            className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-          >
-            <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <FileText className="size-5" />
-            </div>
-            <div>
-              <p className="font-medium">Upload Resume</p>
-              <p className="text-sm text-muted-foreground">Add a new PDF or DOCX file</p>
-            </div>
-          </Link>
-          <Link
-            to="/analysis"
-            className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-          >
-            <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <BarChart3 className="size-5" />
-            </div>
-            <div>
-              <p className="font-medium">Analyze Resume</p>
-              <p className="text-sm text-muted-foreground">Compare against a job description</p>
-            </div>
-          </Link>
+          <Card className="transition-colors hover:bg-accent hover:text-accent-foreground">
+            <Link to="/resume" className="flex items-center gap-4 p-5">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <FileText className="size-5" />
+              </div>
+              <div>
+                <p className="font-medium">Upload Resume</p>
+                <p className="text-sm text-muted-foreground">Add a new PDF or DOCX file</p>
+              </div>
+            </Link>
+          </Card>
+          <Card className="transition-colors hover:bg-accent hover:text-accent-foreground">
+            <Link to="/analysis" className="flex items-center gap-4 p-5">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <BarChart3 className="size-5" />
+              </div>
+              <div>
+                <p className="font-medium">Analyze Resume</p>
+                <p className="text-sm text-muted-foreground">Compare against a job description</p>
+              </div>
+            </Link>
+          </Card>
         </div>
       </section>
     </div>

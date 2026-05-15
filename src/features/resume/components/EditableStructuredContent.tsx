@@ -1,7 +1,9 @@
 import { RotateCcw, Save } from 'lucide-react'
 import { useId } from 'react'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import type { StructuredContent } from '@/lib/schemas/resume.schema'
 import { cn } from '@/lib/utils'
 
@@ -109,12 +111,7 @@ function EditableField({
         {label}
       </label>
       {multiline ? (
-        <textarea
-          id={id}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          className="min-h-24 w-full resize-y rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        />
+        <Textarea id={id} value={value} onChange={(event) => onChange(event.target.value)} />
       ) : (
         <Input id={id} value={value} onChange={(event) => onChange(event.target.value)} />
       )}
@@ -232,10 +229,7 @@ export function EditableStructuredContent({
 
       {sections.length > 0 ? (
         sections.map(([sectionKey, sectionValue]) => (
-          <section
-            key={sectionKey}
-            className="rounded-xl border border-border bg-card p-6 shadow-sm"
-          >
+          <Card key={sectionKey} className="p-6">
             <h2 className="mb-4 text-base font-semibold text-foreground">
               {formatSectionTitle(sectionKey)}
             </h2>
@@ -246,16 +240,12 @@ export function EditableStructuredContent({
               value={sectionValue}
               onChange={onChange}
             />
-          </section>
+          </Card>
         ))
       ) : (
-        <div
-          className={cn(
-            'rounded-xl border border-border bg-card px-4 py-8 text-center text-muted-foreground',
-          )}
-        >
+        <Card className={cn('px-4 py-8 text-center text-muted-foreground')}>
           No structured fields available.
-        </div>
+        </Card>
       )}
     </div>
   )

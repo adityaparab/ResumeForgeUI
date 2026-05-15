@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { type CreateAnalysisDto, CreateAnalysisDtoSchema } from '@/lib/schemas/analysis.schema'
 import { cn } from '@/lib/utils'
 import { useCreateAnalysisMutation } from '../hooks/useCreateAnalysisMutation'
@@ -68,17 +69,11 @@ export function AnalyzeForm() {
         {/* Job description */}
         <div className="space-y-1.5">
           <Label htmlFor="jobDescription">Job Description</Label>
-          <textarea
+          <Textarea
             id="jobDescription"
             rows={8}
             placeholder="Paste the full job description here (min 20 characters)…"
-            className={cn(
-              'flex w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-sm',
-              'transition-colors placeholder:text-muted-foreground',
-              'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-              'disabled:cursor-not-allowed disabled:opacity-50 resize-y',
-              errors.jobDescription && 'border-destructive',
-            )}
+            className={cn(errors.jobDescription && 'border-destructive')}
             aria-invalid={!!errors.jobDescription}
             aria-describedby={errors.jobDescription ? 'jobDescription-error' : undefined}
             {...register('jobDescription')}

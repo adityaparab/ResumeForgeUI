@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { DataTable } from '@/components/ui/data-table'
 import { AnalyzeForm } from '@/features/analysis/components/AnalyzeForm'
 import { useAnalysesList } from '@/features/analysis/hooks/useAnalysesList'
@@ -148,23 +149,23 @@ export default function AnalysisList() {
         <h2 className="mb-4 text-lg font-semibold text-foreground">
           {shouldShowUploadFallback ? 'Upload Resume' : 'New Analysis'}
         </h2>
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <Card className="p-6">
           {isResumesLoading && <LoadingSpinner label="Loading resumes" />}
           {shouldShowUploadFallback && <ResumeUploadForm />}
           {!isResumesLoading && !shouldShowUploadFallback && <AnalyzeForm />}
-        </div>
+        </Card>
       </section>
 
       <section aria-label="Analysis history">
         <h2 className="mb-4 text-lg font-semibold text-foreground">History</h2>
-        <div className="rounded-xl border border-border bg-card shadow-sm">
+        <Card>
           <DataTable
             columns={columns}
             data={data?.data ?? []}
             isLoading={isLoading}
             emptyMessage="No analyses yet. Submit a job description above to get started."
           />
-        </div>
+        </Card>
       </section>
     </div>
   )

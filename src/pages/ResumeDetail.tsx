@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { EditableStructuredContent } from '@/features/resume/components/EditableStructuredContent'
 import { analysisApi, resumeApi } from '@/lib/api-client'
 import type { StructuredContent } from '@/lib/schemas/resume.schema'
-import { cn } from '@/lib/utils'
 
 export default function ResumeDetail() {
   const { resumeId } = useParams<{ resumeId: string }>()
@@ -123,27 +125,22 @@ export default function ResumeDetail() {
           <p className="mt-1 font-mono text-sm text-muted-foreground">{resumeId}</p>
         </div>
         <div className="flex items-center gap-2">
-          <span
-            className={cn(
-              'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium',
+          <Badge
+            variant={
               resume.status === 'completed'
-                ? 'bg-green-100 text-green-800'
+                ? 'success'
                 : resume.status === 'failed'
-                  ? 'bg-red-100 text-red-800'
-                  : 'bg-yellow-100 text-yellow-800',
-            )}
+                  ? 'destructive'
+                  : 'warning'
+            }
           >
             {resume.status}
-          </span>
+          </Badge>
           {resume.status === 'completed' && hasAnalysisResult && (
-            <button
-              type="button"
-              onClick={handleDownload}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-muted"
-            >
+            <Button variant="outline" size="lg" onClick={handleDownload}>
               <Download className="size-4" />
               Download
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -167,11 +164,11 @@ export default function ResumeDetail() {
           onSubmit={() => updateResumeMutation.mutate(draftContent)}
         />
       ) : resume.status !== 'failed' ? (
-        <div className="rounded-xl border border-border bg-card px-4 py-8 text-center text-muted-foreground">
+        <Card className="px-4 py-8 text-center text-muted-foreground">
           {resume.status === 'completed'
             ? 'No structured content available.'
             : 'Resume is still being processed.'}
-        </div>
+        </Card>
       ) : null}
     </div>
   )
