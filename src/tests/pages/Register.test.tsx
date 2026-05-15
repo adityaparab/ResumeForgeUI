@@ -6,12 +6,17 @@ import Register from '@/pages/Register'
 import { server } from '@/tests/mocks/server'
 import { render, screen, userEvent, waitFor } from '@/tests/test-utils'
 
+const emailInput = () => screen.getByLabelText(/email address/i, { selector: 'input' })
+const passwordInput = () => screen.getByLabelText(/^password$/i, { selector: 'input' })
+const confirmPasswordInput = () =>
+  screen.getByLabelText(/^confirm password$/i, { selector: 'input' })
+
 describe('Register page', () => {
   it('renders email, password, and confirm password fields', () => {
     render(<Register />, { initialEntries: ['/register'] })
-    expect(screen.getByLabelText(/email address/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument()
+    expect(emailInput()).toBeInTheDocument()
+    expect(passwordInput()).toBeInTheDocument()
+    expect(confirmPasswordInput()).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument()
   })
 
@@ -40,7 +45,7 @@ describe('Register page', () => {
     const user = userEvent.setup()
     render(<Register />, { initialEntries: ['/register'] })
 
-    await user.type(screen.getByLabelText(/email address/i), 'notanemail')
+    await user.type(emailInput(), 'notanemail')
     await user.click(screen.getByRole('button', { name: /create account/i }))
 
     await waitFor(() => {
@@ -52,9 +57,9 @@ describe('Register page', () => {
     const user = userEvent.setup()
     render(<Register />, { initialEntries: ['/register'] })
 
-    await user.type(screen.getByLabelText(/email address/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/^password$/i), 'password123')
-    await user.type(screen.getByLabelText(/confirm password/i), 'different123')
+    await user.type(emailInput(), 'test@example.com')
+    await user.type(passwordInput(), 'password123')
+    await user.type(confirmPasswordInput(), 'different123')
     await user.click(screen.getByRole('button', { name: /create account/i }))
 
     await waitFor(() => {
@@ -66,9 +71,9 @@ describe('Register page', () => {
     const user = userEvent.setup()
     render(<Register />, { initialEntries: ['/register'] })
 
-    await user.type(screen.getByLabelText(/email address/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/^password$/i), 'short')
-    await user.type(screen.getByLabelText(/confirm password/i), 'short')
+    await user.type(emailInput(), 'test@example.com')
+    await user.type(passwordInput(), 'short')
+    await user.type(confirmPasswordInput(), 'short')
     await user.click(screen.getByRole('button', { name: /create account/i }))
 
     await waitFor(() => {
@@ -80,9 +85,9 @@ describe('Register page', () => {
     const user = userEvent.setup()
     render(<Register />, { initialEntries: ['/register'] })
 
-    await user.type(screen.getByLabelText(/email address/i), 'new@example.com')
-    await user.type(screen.getByLabelText(/^password$/i), 'password123')
-    await user.type(screen.getByLabelText(/confirm password/i), 'password123')
+    await user.type(emailInput(), 'new@example.com')
+    await user.type(passwordInput(), 'password123')
+    await user.type(confirmPasswordInput(), 'password123')
     await user.click(screen.getByRole('button', { name: /create account/i }))
 
     await waitFor(() => {
@@ -109,12 +114,26 @@ describe('Register page', () => {
     )
     render(<Register />, { initialEntries: ['/register'] })
 
-    await user.type(screen.getByLabelText(/email address/i), 'new@example.com')
-    await user.type(screen.getByLabelText(/^password$/i), 'password123')
-    await user.type(screen.getByLabelText(/confirm password/i), 'password123')
+    await user.type(emailInput(), 'new@example.com')
+    await user.type(passwordInput(), 'password123')
+    await user.type(confirmPasswordInput(), 'password123')
     await user.click(screen.getByRole('button', { name: /create account/i }))
 
     expect(screen.getByText(/creating account/i)).toBeInTheDocument()
+  })
+
+  it('toggles password visibility controls', async () => {
+    const user = userEvent.setup()
+    render(<Register />, { initialEntries: ['/register'] })
+
+    expect(passwordInput()).toHaveAttribute('type', 'password')
+    expect(confirmPasswordInput()).toHaveAttribute('type', 'password')
+
+    await user.click(screen.getByRole('button', { name: /^show password$/i }))
+    await user.click(screen.getByRole('button', { name: /show confirm password/i }))
+
+    expect(passwordInput()).toHaveAttribute('type', 'text')
+    expect(confirmPasswordInput()).toHaveAttribute('type', 'text')
   })
 
   it('shows error message on registration failure', async () => {
@@ -126,9 +145,9 @@ describe('Register page', () => {
     const user = userEvent.setup()
     render(<Register />, { initialEntries: ['/register'] })
 
-    await user.type(screen.getByLabelText(/email address/i), 'existing@example.com')
-    await user.type(screen.getByLabelText(/^password$/i), 'password123')
-    await user.type(screen.getByLabelText(/confirm password/i), 'password123')
+    await user.type(emailInput(), 'existing@example.com')
+    await user.type(passwordInput(), 'password123')
+    await user.type(confirmPasswordInput(), 'password123')
     await user.click(screen.getByRole('button', { name: /create account/i }))
 
     await waitFor(() => {

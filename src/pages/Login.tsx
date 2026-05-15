@@ -1,16 +1,27 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FileText, Loader2 } from 'lucide-react'
+import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded'
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded'
+import {
+  Alert,
+  Button,
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+  Link as MuiLink,
+  Stack,
+  TextField,
+  Tooltip,
+} from '@mui/material'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Link as RouterLink } from 'react-router'
+import AuthPageShell from '@/features/auth/components/AuthPageShell'
 import { useLoginMutation } from '@/features/auth/hooks/useAuthMutations'
 import { type LoginDto, LoginDtoSchema } from '@/lib/schemas/auth.schema'
 
 export default function Login() {
   const loginMutation = useLoginMutation()
+  const [showPassword, setShowPassword] = useState(false)
 
   const {
     register,
@@ -24,96 +35,103 @@ export default function Login() {
     loginMutation.mutate(data)
   }
 
+  const { ref: emailRef, ...emailField } = register('email')
+  const { ref: passwordRef, ...passwordField } = register('password')
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-12">
-      <div className="w-full max-w-md space-y-6">
-        {/* Logo */}
-        <div className="flex flex-col items-center gap-2 text-center">
-          <div className="flex items-center gap-2">
-            <FileText className="size-8 text-primary" />
-            <span className="text-2xl font-bold text-foreground">ResumeForge</span>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            AI-powered resume analysis and optimization
-          </p>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">Welcome back</CardTitle>
-            <CardDescription>Sign in to your account to continue</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-              {/* Email */}
-              <div className="space-y-1.5">
-                <Label htmlFor="email">Email address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  aria-invalid={errors.email ? 'true' : 'false'}
-                  aria-describedby={errors.email ? 'email-error' : undefined}
-                  {...register('email')}
-                />
-                {errors.email && (
-                  <p id="email-error" role="alert" className="text-xs text-destructive">
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Password */}
-              <div className="space-y-1.5">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  placeholder="••••••••"
-                  aria-invalid={errors.password ? 'true' : 'false'}
-                  aria-describedby={errors.password ? 'password-error' : undefined}
-                  {...register('password')}
-                />
-                {errors.password && (
-                  <p id="password-error" role="alert" className="text-xs text-destructive">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Submit */}
-              <Button type="submit" className="w-full" size="lg" disabled={loginMutation.isPending}>
-                {loginMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 size-4 animate-spin" />
-                    Signing in…
-                  </>
-                ) : (
-                  'Sign in'
-                )}
-              </Button>
-
-              {/* API error */}
-              {loginMutation.isError && (
-                <p role="alert" className="text-center text-sm text-destructive">
-                  {loginMutation.error instanceof Error
-                    ? loginMutation.error.message
-                    : /* v8 ignore next */ 'Login failed. Please try again.'}
-                </p>
-              )}
-            </form>
-          </CardContent>
-        </Card>
-
-        <p className="text-center text-sm text-muted-foreground">
+    <AuthPageShell
+      title="Welcome back"
+      subtitle="Sign in to continue your resume analysis workspace."
+      footer={
+        <>
           Don&apos;t have an account?{' '}
-          <Link to="/register" className="font-medium text-primary underline underline-offset-4">
+          <MuiLink component={RouterLink} to="/register" underline="hover" sx={{ fontWeight: 700 }}>
             Create one
-          </Link>
-        </p>
-      </div>
-    </div>
+          </MuiLink>
+        </>
+      }
+    >
+      <Stack component="form" spacing={2.5} onSubmit={handleSubmit(onSubmit)} noValidate>
+        <TextField
+          id="email"
+          label="Email address"
+          type="email"
+          autoComplete="email"
+          placeholder="you@example.com"
+          error={Boolean(errors.email)}
+          helperText={errors.email?.message}
+          inputRef={emailRef}
+          fullWidth
+          slotProps={{
+            formHelperText: {
+              id: 'login-email-helper-text',
+              role: errors.email ? 'alert' : undefined,
+            },
+          }}
+          {...emailField}
+        />
+
+        <TextField
+          id="password"
+          label="Password"
+          type={showPassword ? 'text' : 'password'}
+          autoComplete="current-password"
+          placeholder="Enter your password"
+          error={Boolean(errors.password)}
+          helperText={errors.password?.message}
+          inputRef={passwordRef}
+          fullWidth
+          slotProps={{
+            formHelperText: {
+              id: 'login-password-helper-text',
+              role: errors.password ? 'alert' : undefined,
+            },
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Tooltip title={showPassword ? 'Hide password' : 'Show password'}>
+                    <IconButton
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      edge="end"
+                      onClick={() => setShowPassword((value) => !value)}
+                      onMouseDown={(event) => event.preventDefault()}
+                    >
+                      {showPassword ? <VisibilityOffRoundedIcon /> : <VisibilityRoundedIcon />}
+                    </IconButton>
+                  </Tooltip>
+                </InputAdornment>
+              ),
+            },
+          }}
+          {...passwordField}
+        />
+
+        {loginMutation.isError && (
+          <Alert severity="error" role="alert">
+            {loginMutation.error instanceof Error
+              ? loginMutation.error.message
+              : /* v8 ignore next */ 'Login failed. Please try again.'}
+          </Alert>
+        )}
+
+        <Button
+          type="submit"
+          variant="contained"
+          size="large"
+          disabled={loginMutation.isPending}
+          fullWidth
+          sx={{ minHeight: 48 }}
+        >
+          {loginMutation.isPending ? (
+            <>
+              <CircularProgress color="inherit" size={18} sx={{ mr: 1 }} />
+              Signing in...
+            </>
+          ) : (
+            'Sign in'
+          )}
+        </Button>
+      </Stack>
+    </AuthPageShell>
   )
 }

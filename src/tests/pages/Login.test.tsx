@@ -6,11 +6,14 @@ import Login from '@/pages/Login'
 import { server } from '@/tests/mocks/server'
 import { render, screen, userEvent, waitFor } from '@/tests/test-utils'
 
+const emailInput = () => screen.getByLabelText(/email address/i, { selector: 'input' })
+const passwordInput = () => screen.getByLabelText(/^password$/i, { selector: 'input' })
+
 describe('Login page', () => {
   it('renders email and password fields', () => {
     render(<Login />, { initialEntries: ['/login'] })
-    expect(screen.getByLabelText(/email address/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
+    expect(emailInput()).toBeInTheDocument()
+    expect(passwordInput()).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument()
   })
 
@@ -39,7 +42,7 @@ describe('Login page', () => {
     const user = userEvent.setup()
     render(<Login />, { initialEntries: ['/login'] })
 
-    await user.type(screen.getByLabelText(/email address/i), 'notanemail')
+    await user.type(emailInput(), 'notanemail')
     await user.click(screen.getByRole('button', { name: /sign in/i }))
 
     await waitFor(() => {
@@ -51,8 +54,8 @@ describe('Login page', () => {
     const user = userEvent.setup()
     render(<Login />, { initialEntries: ['/login'] })
 
-    await user.type(screen.getByLabelText(/email address/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/password/i), 'short')
+    await user.type(emailInput(), 'test@example.com')
+    await user.type(passwordInput(), 'short')
     await user.click(screen.getByRole('button', { name: /sign in/i }))
 
     await waitFor(() => {
@@ -64,8 +67,8 @@ describe('Login page', () => {
     const user = userEvent.setup()
     render(<Login />, { initialEntries: ['/login'] })
 
-    await user.type(screen.getByLabelText(/email address/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/password/i), 'password123')
+    await user.type(emailInput(), 'test@example.com')
+    await user.type(passwordInput(), 'password123')
     await user.click(screen.getByRole('button', { name: /sign in/i }))
 
     await waitFor(() => {
@@ -90,11 +93,23 @@ describe('Login page', () => {
     )
     render(<Login />, { initialEntries: ['/login'] })
 
-    await user.type(screen.getByLabelText(/email address/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/password/i), 'password123')
+    await user.type(emailInput(), 'test@example.com')
+    await user.type(passwordInput(), 'password123')
     await user.click(screen.getByRole('button', { name: /sign in/i }))
 
     expect(screen.getByText(/signing in/i)).toBeInTheDocument()
+  })
+
+  it('toggles password visibility', async () => {
+    const user = userEvent.setup()
+    render(<Login />, { initialEntries: ['/login'] })
+
+    expect(passwordInput()).toHaveAttribute('type', 'password')
+
+    await user.click(screen.getByRole('button', { name: /show password/i }))
+
+    expect(passwordInput()).toHaveAttribute('type', 'text')
+    expect(screen.getByRole('button', { name: /hide password/i })).toBeInTheDocument()
   })
 
   it('shows error message on login failure', async () => {
@@ -106,8 +121,8 @@ describe('Login page', () => {
     const user = userEvent.setup()
     render(<Login />, { initialEntries: ['/login'] })
 
-    await user.type(screen.getByLabelText(/email address/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/password/i), 'wrongpassword')
+    await user.type(emailInput(), 'test@example.com')
+    await user.type(passwordInput(), 'wrongpassword')
     await user.click(screen.getByRole('button', { name: /sign in/i }))
 
     await waitFor(() => {
