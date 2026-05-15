@@ -38,14 +38,15 @@ export function StreamViewer({
   onDone,
   className,
 }: StreamViewerProps) {
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const outputRef = useRef<HTMLDivElement>(null)
 
   // Auto-scroll as text comes in
   useEffect(() => {
-    if (status === 'streaming') {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (status === 'streaming' && fullText.length > 0) {
+      const output = outputRef.current as HTMLDivElement
+      output.scrollTop = output.scrollHeight
     }
-  }, [status])
+  }, [status, fullText])
 
   // Trigger onDone callback
   useEffect(() => {
@@ -86,8 +87,11 @@ export function StreamViewer({
 
       {/* Stream output */}
       <div
-        className="relative min-h-48 rounded-xl border border-border bg-card p-6 font-mono text-sm leading-relaxed"
+        ref={outputRef}
+        className="relative max-h-[calc(100vh-18rem)] min-h-48 overflow-y-auto rounded-xl border border-border bg-card p-6 font-mono text-sm leading-relaxed"
+        aria-label="Stream output"
         aria-live="polite"
+        role="log"
       >
         {fullText ? (
           <pre className="whitespace-pre-wrap break-words text-foreground">{fullText}</pre>
@@ -96,7 +100,6 @@ export function StreamViewer({
             {status === 'failed' ? 'No output.' : 'Waiting for output…'}
           </p>
         )}
-        <div ref={bottomRef} />
       </div>
     </div>
   )

@@ -143,4 +143,75 @@ test.describe('Analysis Flow', () => {
       await expect(page.getByText(/match score/i)).toBeVisible()
     })
   })
+
+  test.describe('Analysis Stream', () => {
+    test('renders chunk text only and keeps output scrolled to latest content', async ({
+      page,
+    }) => {
+      await page.addInitScript(() => {
+        class MockEventSource {
+          listeners: Record<string, Array<(event: MessageEvent) => void>> = {}
+          readyState = 0
+
+          constructor(_url: string) {
+            setTimeout(() => {
+              this.emit(
+                'chunk',
+                JSON.stringify({ chunk: 'Visible first line\n', hidden: 'do-not-render' }),
+              )
+              this.emit(
+                'chunk',
+                JSON.stringify({
+                  chunk: Array.from({ length: 80 }, (_, index) => `line ${index}\n`).join(''),
+                  rawEvent: 'also-hidden',
+                }),
+              )
+            }, 50)
+          }
+
+          addEventListener(type: string, handler: (event: MessageEvent) => void) {
+            this.listeners[type] ??= []
+            this.listeners[type].push(handler)
+          }
+
+          emit(type: string, data: string) {
+            this.listeners[type]?.forEach((handler) => {
+              handler(new MessageEvent(type, { data }))
+            })
+          }
+
+          close() {
+            this.readyState = 2
+          }
+        }
+
+        Object.defineProperty(window, 'EventSource', {
+          configurable: true,
+          writable: true,
+          value: MockEventSource,
+        })
+      })
+      await page.route(`${API}/analysis/status/${MOCK_ANALYSIS.id}`, (route) =>
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            id: MOCK_ANALYSIS.id,
+            resumeId: MOCK_RESUME.id,
+            jobId: 'analysis-stream-job',
+            status: 'processing',
+          }),
+        }),
+      )
+
+      await page.goto(`/analysis/stream/${MOCK_ANALYSIS.id}`)
+
+      const output = page.getByLabel('Stream output')
+      await expect(output).toContainText('Visible first line')
+      await expect(output).toContainText('line 79')
+      await expect(output).not.toContainText('do-not-render')
+      await expect(output).not.toContainText('also-hidden')
+      await expect.poll(async () => output.evaluate((element) => element.scrollTop > 0)).toBe(true)
+    })
+  })
 })

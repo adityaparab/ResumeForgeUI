@@ -1,11 +1,7 @@
 import { act, render, screen } from '@testing-library/react'
-import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { StreamViewer } from '@/features/common/components/StreamViewer'
 import type { StreamStatus } from '@/features/common/hooks/useStreamJob'
-
-beforeAll(() => {
-  window.HTMLElement.prototype.scrollIntoView = vi.fn()
-})
 
 const defaultProps = {
   title: 'Test Stream',
@@ -53,6 +49,7 @@ describe('StreamViewer', () => {
   it('renders fullText in output', () => {
     render(<StreamViewer {...defaultProps} fullText="Hello world output" />)
     expect(screen.getByText('Hello world output')).toBeInTheDocument()
+    expect(screen.getByLabelText('Stream output')).toBeInTheDocument()
   })
 
   it('shows waiting message when no text and not failed', () => {
@@ -74,5 +71,17 @@ describe('StreamViewer', () => {
       rerender(<StreamViewer {...defaultProps} status="done" onDone={onDone} />)
     })
     expect(onDone).toHaveBeenCalledTimes(1)
+  })
+
+  it('auto-scrolls when streaming text changes', async () => {
+    const { rerender } = render(
+      <StreamViewer {...defaultProps} status="streaming" fullText="one" />,
+    )
+    const output = screen.getByLabelText('Stream output')
+    Object.defineProperty(output, 'scrollHeight', { configurable: true, value: 120 })
+    await act(async () => {
+      rerender(<StreamViewer {...defaultProps} status="streaming" fullText="one\ntwo" />)
+    })
+    expect(output.scrollTop).toBe(120)
   })
 })

@@ -110,7 +110,7 @@
 ### Post-Plan Gap Remediation (Issues #51–#56)
 51. **#51** - Gap Stage 2: Analysis page status-aware actions and upload fallback. **Done:** Analysis history now shows stream-only actions for queued/pending/processing analyses, result/interview actions only for completed analyses, failure details for failed analyses, and an upload-resume fallback when no completed resumes exist. Uploading from the fallback navigates to the resume stream workflow.
 52. **#52** - Gap Stage 3: Resume page status-aware actions and failure routing. **Done:** Resume history now shows stream-only actions for queued/pending/processing extraction, the View action only for completed resumes, and failure details for failed extraction. Resume detail also surfaces failed extraction error text when available.
-53. **#53** - Gap Stage 4: Stream display chunk rendering and auto-follow scroll.
+53. **#53** - Gap Stage 4: Stream display chunk rendering and auto-follow scroll. **Done:** Stream events now render only user-visible chunk text from structured SSE payloads, ignore hidden metadata fields, preserve friendly failure messages, and use an internally scrollable live log that follows new output while streaming. Unit and E2E coverage exercise structured chunks, history payloads, failures, and auto-scroll behavior.
 54. **#54** - Gap Stage 5: Repair analysis and resume detail screens.
 55. **#55** - Gap Stage 6: Repair header controls and simplify dashboard.
 56. **#56** - Gap Stage 7: Modernize UI with shadcn and ai-elements components.
