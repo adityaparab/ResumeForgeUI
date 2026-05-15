@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
-import { toast } from 'sonner'
 import { useAppDispatch } from '@/app/hooks'
+import { toast } from '@/components/common/toast'
 import { authApi } from '@/lib/api-client'
 import type { LoginDto, RegisterDto } from '@/lib/schemas/auth.schema'
 import { logout as logoutAction, setCredentials } from '@/stores/authSlice'

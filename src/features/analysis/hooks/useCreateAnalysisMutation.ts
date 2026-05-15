@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
-import { toast } from 'sonner'
 import { useAppDispatch } from '@/app/hooks'
+import { toast } from '@/components/common/toast'
 import { analysisApi } from '@/lib/api-client'
 import type { CreateAnalysisDto } from '@/lib/schemas/analysis.schema'
 import { addActiveJob } from '@/stores/uiSlice'

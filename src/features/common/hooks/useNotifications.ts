@@ -1,7 +1,7 @@
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo } from 'react'
-import { toast } from 'sonner'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
+import { toast } from '@/components/common/toast'
 import { analysisApi, resumeApi } from '@/lib/api-client'
 import type { AnalysisStatusResponse } from '@/lib/schemas/analysis.schema'
 import type { ResumeStatusResponse } from '@/lib/schemas/resume.schema'

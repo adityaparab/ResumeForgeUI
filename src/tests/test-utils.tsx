@@ -4,8 +4,8 @@ import userEvent from '@testing-library/user-event'
 import type { ReactElement } from 'react'
 import { Provider as ReduxProvider } from 'react-redux'
 import { MemoryRouter } from 'react-router'
-import { Toaster } from 'sonner'
 import { store } from '@/app/store'
+import AppSnackbar from '@/components/common/AppSnackbar'
 import ThemeProvider from '@/components/common/ThemeProvider'
 
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
@@ -31,7 +31,7 @@ function customRender(ui: ReactElement, options?: CustomRenderOptions) {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
             <MemoryRouter initialEntries={initialEntries ?? ['/']}>{children}</MemoryRouter>
-            <Toaster closeButton />
+            <AppSnackbar />
           </ThemeProvider>
         </QueryClientProvider>
       </ReduxProvider>

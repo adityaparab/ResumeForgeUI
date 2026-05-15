@@ -1,6 +1,6 @@
+import { Alert, AlertTitle, Box, Button, Paper, Typography } from '@mui/material'
 import * as Sentry from '@sentry/react'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
-import { Button } from '@/components/ui/button'
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -38,16 +38,22 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
       }
 
       return (
-        <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 p-8">
-          <div className="text-destructive text-4xl">!</div>
-          <h2 className="text-xl font-semibold">Something went wrong</h2>
-          <p className="text-muted-foreground max-w-md text-center">
-            {this.state.error?.message ?? 'An unexpected error occurred. Please try again.'}
-          </p>
-          <Button onClick={this.handleReset} variant="outline">
-            Try Again
-          </Button>
-        </div>
+        <Box sx={{ display: 'grid', minHeight: 400, placeItems: 'center', p: 3 }}>
+          <Paper
+            variant="outlined"
+            sx={{ width: '100%', maxWidth: 560, borderRadius: 2, p: { xs: 2, sm: 3 } }}
+          >
+            <Alert severity="error" variant="outlined" sx={{ mb: 2 }}>
+              <AlertTitle>Something went wrong</AlertTitle>
+              <Typography variant="body2">
+                {this.state.error?.message ?? 'An unexpected error occurred. Please try again.'}
+              </Typography>
+            </Alert>
+            <Button onClick={this.handleReset} variant="outlined">
+              Try Again
+            </Button>
+          </Paper>
+        </Box>
       )
     }
 

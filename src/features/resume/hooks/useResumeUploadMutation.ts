@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
-import { toast } from 'sonner'
 import { useAppDispatch } from '@/app/hooks'
+import { toast } from '@/components/common/toast'
 import { resumeApi } from '@/lib/api-client'
 import { addActiveJob } from '@/stores/uiSlice'
 

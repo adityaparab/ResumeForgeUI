@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { toast } from 'sonner'
 import { store } from '@/app/store'
+import { toast } from '@/components/common/toast'
 import { API_URL } from '@/constants'
 
 export type StreamStatus = 'connecting' | 'streaming' | 'done' | 'failed' | 'idle'

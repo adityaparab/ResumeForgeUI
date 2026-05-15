@@ -3,7 +3,13 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { store } from '@/app/store'
 import { API_URL } from '@/constants'
 import { NotificationBell } from '@/features/common/components/NotificationBell'
-import { type ActiveJob, addActiveJob, removeActiveJob, selectActiveJobs } from '@/stores/uiSlice'
+import {
+  type ActiveJob,
+  addActiveJob,
+  removeActiveJob,
+  selectActiveJobs,
+  selectUnreadJobCount,
+} from '@/stores/uiSlice'
 import { server } from '@/tests/mocks/server'
 import { fireEvent, render, screen, userEvent, waitFor } from '@/tests/test-utils'
 
@@ -101,7 +107,7 @@ describe('NotificationBell', () => {
     await user.click(screen.getByRole('button', { name: /mark all read/i }))
 
     await waitFor(() => {
-      expect(screen.queryByText('1')).not.toBeInTheDocument()
+      expect(selectUnreadJobCount(store.getState())).toBe(0)
       expect(screen.getByText('0 ongoing, 1 completed, 0 unread')).toBeInTheDocument()
     })
 
@@ -119,7 +125,7 @@ describe('NotificationBell', () => {
 
     await waitFor(() => {
       expect(screen.queryByRole('dialog', { name: /notifications/i })).not.toBeInTheDocument()
-      expect(screen.queryByText('1')).not.toBeInTheDocument()
+      expect(selectUnreadJobCount(store.getState())).toBe(0)
     })
   })
 

@@ -1,8 +1,24 @@
-import { AlertCircle, CheckCircle2, Clock, X } from 'lucide-react'
+import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded'
+import ClearAllRoundedIcon from '@mui/icons-material/ClearAllRounded'
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded'
+import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded'
+import ScheduleRoundedIcon from '@mui/icons-material/ScheduleRounded'
+import {
+  Box,
+  Button,
+  Chip,
+  Divider,
+  IconButton,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Paper,
+  Stack,
+  Typography,
+} from '@mui/material'
 import { Link } from 'react-router'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
 import type { ActiveJob, JobStatus, JobType } from '@/stores/uiSlice'
 import { isOngoingJob, isTerminalJob } from '../hooks/useNotifications'
 
@@ -25,14 +41,11 @@ const STATUS_LABELS = {
   failed: 'Failed',
 } satisfies Record<JobStatus, string>
 
-const STATUS_STYLES = {
-  pending:
-    'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300',
-  processing:
-    'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300',
-  completed:
-    'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300',
-  failed: 'border-destructive/30 bg-destructive/10 text-destructive',
+const STATUS_COLORS = {
+  pending: 'warning',
+  processing: 'info',
+  completed: 'success',
+  failed: 'error',
 } satisfies Record<JobStatus, string>
 
 const JOB_TYPE_LABELS = {
@@ -46,9 +59,9 @@ const JOB_TYPE_ROUTES = {
 } satisfies Record<JobType, string>
 
 function getStatusIcon(status: JobStatus) {
-  if (status === 'failed') return <AlertCircle className="size-4" aria-hidden="true" />
-  if (status === 'completed') return <CheckCircle2 className="size-4" aria-hidden="true" />
-  return <Clock className="size-4" aria-hidden="true" />
+  if (status === 'failed') return <ErrorOutlineRoundedIcon fontSize="small" />
+  if (status === 'completed') return <CheckCircleOutlineRoundedIcon fontSize="small" />
+  return <ScheduleRoundedIcon fontSize="small" />
 }
 
 export function getNotificationHref(job: ActiveJob) {
@@ -67,15 +80,14 @@ function formatCreatedAt(createdAt: string) {
 
 function NotificationStatusBadge({ status }: { status: JobStatus }) {
   return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium',
-        STATUS_STYLES[status],
-      )}
-    >
-      {getStatusIcon(status)}
-      {STATUS_LABELS[status]}
-    </span>
+    <Chip
+      size="small"
+      color={STATUS_COLORS[status] as 'warning' | 'info' | 'success' | 'error'}
+      variant="outlined"
+      icon={getStatusIcon(status)}
+      label={STATUS_LABELS[status]}
+      sx={{ fontWeight: 700 }}
+    />
   )
 }
 
@@ -94,77 +106,100 @@ export function NotificationDropdown({
   const hasTerminalJobs = jobs.some((job) => isTerminalJob(job.status))
 
   return (
-    <Card
+    <Paper
       role="dialog"
       aria-label="Notifications"
-      className="absolute right-0 top-11 z-50 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-lg shadow-lg"
+      elevation={8}
+      sx={{ width: 'min(22rem, calc(100vw - 2rem))', overflow: 'hidden' }}
     >
-      <div className="flex items-start justify-between gap-3 border-b border-border px-4 py-3">
-        <div>
-          <h2 className="font-semibold text-sm text-foreground">Notifications</h2>
-          <p className="mt-1 text-muted-foreground text-xs">
+      <Stack
+        direction="row"
+        spacing={2}
+        sx={{ alignItems: 'flex-start', justifyContent: 'space-between', px: 2, py: 1.5 }}
+      >
+        <Box>
+          <Typography variant="subtitle2">Notifications</Typography>
+          <Typography variant="caption" color="text.secondary">
             {ongoingCount} ongoing, {completedCount} completed, {unreadCount} unread
-          </p>
-        </div>
+          </Typography>
+        </Box>
         {unreadCount > 0 && (
-          <Button variant="ghost" size="xs" onClick={onMarkAllRead}>
+          <Button size="small" startIcon={<DoneAllRoundedIcon />} onClick={onMarkAllRead}>
             Mark all read
           </Button>
         )}
-      </div>
+      </Stack>
+
+      <Divider />
 
       {hasJobs ? (
-        <ul
-          className="max-h-96 divide-y divide-border overflow-y-auto"
+        <List
+          disablePadding
           aria-label="Job notifications"
+          sx={{ maxHeight: 384, overflowY: 'auto' }}
         >
           {jobs.map((job) => (
-            <li key={`${job.type}-${job.id}`} className="group relative flex gap-2 px-4 py-3">
-              <Link
+            <ListItem
+              key={`${job.type}-${job.id}`}
+              disablePadding
+              secondaryAction={
+                <IconButton
+                  edge="end"
+                  size="small"
+                  aria-label={`Dismiss ${job.label}`}
+                  onClick={() => onDismiss(job.id)}
+                >
+                  <CloseRoundedIcon fontSize="small" />
+                </IconButton>
+              }
+              sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
+            >
+              <ListItemButton
+                component={Link}
                 to={getNotificationHref(job)}
-                className="min-w-0 flex-1 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 onClick={() => {
                   onMarkAsRead(job.id)
                   onClose()
                 }}
+                sx={{ alignItems: 'flex-start', gap: 1.5, pr: 7, py: 1.5 }}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-sm text-foreground">{job.label}</p>
-                    <p className="mt-1 text-muted-foreground text-xs">
-                      {JOB_TYPE_LABELS[job.type]} - {formatCreatedAt(job.createdAt)}
-                    </p>
-                  </div>
+                <ListItemText
+                  primary={job.label}
+                  secondary={`${JOB_TYPE_LABELS[job.type]} - ${formatCreatedAt(job.createdAt)}`}
+                  slotProps={{
+                    primary: { sx: { fontWeight: 700 } },
+                    secondary: { sx: { mt: 0.5 } },
+                  }}
+                />
+                <Box sx={{ pt: 0.25 }}>
                   <NotificationStatusBadge status={job.status} />
-                </div>
-              </Link>
-
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                aria-label={`Dismiss ${job.label}`}
-                className="mt-0.5 opacity-80 group-hover:opacity-100"
-                onClick={() => onDismiss(job.id)}
-              >
-                <X className="size-3.5" />
-              </Button>
-            </li>
+                </Box>
+              </ListItemButton>
+            </ListItem>
           ))}
-        </ul>
+        </List>
       ) : (
-        <div className="px-4 py-8 text-center">
-          <p className="font-medium text-sm text-foreground">No notifications</p>
-          <p className="mt-1 text-muted-foreground text-xs">Ongoing activity will appear here.</p>
-        </div>
+        <Box sx={{ px: 2, py: 4, textAlign: 'center' }}>
+          <Typography variant="subtitle2">No notifications</Typography>
+          <Typography variant="caption" color="text.secondary">
+            Ongoing activity will appear here.
+          </Typography>
+        </Box>
       )}
 
       {hasTerminalJobs && (
-        <div className="border-t border-border px-4 py-3">
-          <Button variant="outline" size="sm" className="w-full" onClick={onClearCompleted}>
+        <Box sx={{ borderTop: '1px solid', borderColor: 'divider', p: 1.5 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            fullWidth
+            startIcon={<ClearAllRoundedIcon />}
+            onClick={onClearCompleted}
+          >
             Clear completed
           </Button>
-        </div>
+        </Box>
       )}
-    </Card>
+    </Paper>
   )
 }
