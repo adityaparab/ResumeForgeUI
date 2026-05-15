@@ -21,10 +21,4 @@ describe('LoadingSpinner', () => {
     const spinner = screen.getByRole('status')
     expect(spinner).toBeInTheDocument()
   })
-
-  it('renders with custom className', () => {
-    render(<LoadingSpinner className="my-custom-class" />)
-    const spinner = screen.getByRole('status')
-    expect(spinner.className).toContain('my-custom-class')
-  })
 })

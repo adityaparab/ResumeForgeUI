@@ -1,3 +1,4 @@
+import { Alert, Typography } from '@mui/material'
 import type { Meta, StoryObj } from '@storybook/react'
 import ErrorBoundary from './ErrorBoundary'
 
@@ -19,7 +20,7 @@ type Story = StoryObj<typeof meta>
 
 export const Normal: Story = {
   args: {
-    children: <p className="text-sm text-muted-foreground">Protected content rendered.</p>,
+    children: <Typography color="text.secondary">Protected content rendered.</Typography>,
   },
 }
 
@@ -32,10 +33,6 @@ export const DefaultFallback: Story = {
 export const CustomFallback: Story = {
   args: {
     children: <BrokenPreview />,
-    fallback: (
-      <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-6 py-4 text-destructive text-sm">
-        Custom recovery surface
-      </div>
-    ),
+    fallback: <Alert severity="error">Custom recovery surface</Alert>,
   },
 }

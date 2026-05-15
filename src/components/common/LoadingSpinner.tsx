@@ -2,7 +2,6 @@ import { CircularProgress, Stack, Typography } from '@mui/material'
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg'
-  className?: string
   label?: string
 }
 
@@ -12,10 +11,9 @@ const sizeMap = {
   lg: 48,
 }
 
-export default function LoadingSpinner({ size = 'md', className, label }: LoadingSpinnerProps) {
+export default function LoadingSpinner({ size = 'md', label }: LoadingSpinnerProps) {
   return (
     <Stack
-      className={className}
       role="status"
       aria-label={label ?? 'Loading'}
       sx={{ alignItems: 'center', justifyContent: 'center', gap: 1 }}

@@ -4,7 +4,6 @@ import type { ReactNode } from 'react'
 type StatsCardTone = 'primary' | 'secondary' | 'success' | 'warning'
 
 interface StatsCardProps {
-  className?: string
   description?: string
   icon: ReactNode
   title: string
@@ -19,17 +18,9 @@ const tonePalette: Record<StatsCardTone, string> = {
   warning: 'warning.main',
 }
 
-export function StatsCard({
-  className,
-  description,
-  icon,
-  title,
-  tone = 'primary',
-  value,
-}: StatsCardProps) {
+export function StatsCard({ description, icon, title, tone = 'primary', value }: StatsCardProps) {
   return (
     <Paper
-      className={className}
       elevation={0}
       sx={{
         bgcolor: 'background.paper',

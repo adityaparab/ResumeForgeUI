@@ -29,13 +29,6 @@ describe('StatsCard', () => {
     )
     expect(queryByText(/description/i)).not.toBeInTheDocument()
   })
-
-  it('applies custom className', () => {
-    const { container } = render(
-      <StatsCard title="X" value={0} icon={<DescriptionRoundedIcon />} className="custom-test" />,
-    )
-    expect(container.firstChild).toHaveClass('custom-test')
-  })
 })
 
 describe('StatsCardSkeleton', () => {
