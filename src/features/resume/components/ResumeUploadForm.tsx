@@ -1,7 +1,9 @@
-import { Upload, X } from 'lucide-react'
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import InsertDriveFileRoundedIcon from '@mui/icons-material/InsertDriveFileRounded'
+import UploadFileRoundedIcon from '@mui/icons-material/UploadFileRounded'
+import { Alert, Box, Button, CircularProgress, Paper, Stack, Typography } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import { useCallback, useRef, useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import { useResumeUploadMutation } from '../hooks/useResumeUploadMutation'
 
 const ACCEPTED_MIME_TYPES = [
@@ -89,81 +91,140 @@ export function ResumeUploadForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate aria-label="Upload resume">
-      <div className="space-y-4">
-        {/* Drop zone */}
-        {/* biome-ignore lint/a11y/useSemanticElements: div needed for drag-and-drop with nested input */}
-        <div
-          className={cn(
-            'flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 text-center transition-colors',
-            isDragging
-              ? 'border-primary bg-primary/5'
-              : 'border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50',
-            file && 'border-primary/50 bg-primary/5',
-          )}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => inputRef.current?.click()}
-          role="button"
-          tabIndex={0}
-          aria-label="Drop zone: click or drag to upload a resume"
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click()
-          }}
-        >
-          <Upload className="mb-3 size-10 text-muted-foreground" />
-          {file ? (
-            <p className="text-sm font-medium text-foreground">{file.name}</p>
-          ) : (
-            <>
-              <p className="text-sm font-medium text-foreground">
-                Drop your resume here or click to browse
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">PDF or DOCX · max 5 MB</p>
-            </>
-          )}
-          <input
-            ref={inputRef}
-            type="file"
-            className="sr-only"
-            accept={ACCEPTED_EXTENSIONS.join(',')}
-            onChange={handleInputChange}
-            aria-label="File input"
-            data-testid="file-input"
-          />
-        </div>
-
-        {/* Validation error */}
-        {fileError && (
-          <p className="text-xs text-destructive" role="alert">
-            {fileError}
-          </p>
-        )}
-
-        {/* Actions */}
-        <div className="flex items-center justify-end gap-3">
-          {file && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleReset}
-              aria-label="Remove selected file"
-            >
-              <X className="mr-1 size-4" />
-              Remove
-            </Button>
-          )}
-          <Button
-            type="submit"
-            disabled={!file || uploadMutation.isPending}
-            aria-busy={uploadMutation.isPending}
+    <Box component="form" onSubmit={handleSubmit} noValidate aria-label="Upload resume">
+      <Paper
+        elevation={0}
+        sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: { xs: 2, sm: 3 } }}
+      >
+        <Stack spacing={2.5}>
+          <Box
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => inputRef.current?.click()}
+            role="button"
+            tabIndex={0}
+            aria-label="Drop zone: click or drag to upload a resume"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click()
+            }}
+            sx={{
+              alignItems: 'center',
+              bgcolor: (theme) =>
+                file || isDragging
+                  ? alpha(theme.palette.primary.main, 0.06)
+                  : theme.palette.action.hover,
+              border: 2,
+              borderColor: file || isDragging ? 'primary.main' : 'divider',
+              borderRadius: 2,
+              borderStyle: 'dashed',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+              minHeight: { xs: 220, sm: 260 },
+              p: { xs: 3, sm: 5 },
+              textAlign: 'center',
+              transition: (theme) => theme.transitions.create(['background-color', 'border-color']),
+              '&:hover': {
+                bgcolor: (theme) => alpha(theme.palette.primary.main, 0.06),
+                borderColor: 'primary.main',
+              },
+              '&:focus-visible': {
+                outline: '3px solid',
+                outlineColor: 'primary.light',
+                outlineOffset: 3,
+              },
+            }}
           >
-            {uploadMutation.isPending ? 'Uploading…' : 'Upload Resume'}
-          </Button>
-        </div>
-      </div>
-    </form>
+            <Box
+              sx={{
+                alignItems: 'center',
+                bgcolor: 'background.paper',
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: 2,
+                color: file ? 'primary.main' : 'text.secondary',
+                display: 'flex',
+                height: 56,
+                justifyContent: 'center',
+                width: 56,
+              }}
+            >
+              {file ? (
+                <InsertDriveFileRoundedIcon fontSize="large" />
+              ) : (
+                <UploadFileRoundedIcon fontSize="large" />
+              )}
+            </Box>
+            {file ? (
+              <Stack spacing={0.5} sx={{ alignItems: 'center' }}>
+                <Typography variant="subtitle1">{file.name}</Typography>
+                <Typography color="text.secondary" variant="body2">
+                  {(file.size / 1024).toFixed(1)} KB selected
+                </Typography>
+              </Stack>
+            ) : (
+              <>
+                <Typography variant="subtitle1">
+                  Drop your resume here or click to browse
+                </Typography>
+                <Typography color="text.secondary" variant="body2">
+                  PDF or DOCX, max 5 MB
+                </Typography>
+              </>
+            )}
+            <input
+              ref={inputRef}
+              type="file"
+              accept={ACCEPTED_EXTENSIONS.join(',')}
+              onChange={handleInputChange}
+              aria-label="File input"
+              data-testid="file-input"
+              style={{ display: 'none' }}
+            />
+          </Box>
+
+          {fileError && (
+            <Alert severity="error" role="alert">
+              {fileError}
+            </Alert>
+          )}
+
+          <Stack
+            direction={{ xs: 'column-reverse', sm: 'row' }}
+            spacing={1.5}
+            sx={{ justifyContent: 'flex-end' }}
+          >
+            {file && (
+              <Button
+                type="button"
+                variant="text"
+                onClick={handleReset}
+                aria-label="Remove selected file"
+                startIcon={<CloseRoundedIcon />}
+              >
+                Remove
+              </Button>
+            )}
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={!file || uploadMutation.isPending}
+              aria-busy={uploadMutation.isPending}
+              startIcon={
+                uploadMutation.isPending ? (
+                  <CircularProgress color="inherit" size={18} />
+                ) : (
+                  <UploadFileRoundedIcon />
+                )
+              }
+            >
+              {uploadMutation.isPending ? 'Uploading...' : 'Upload Resume'}
+            </Button>
+          </Stack>
+        </Stack>
+      </Paper>
+    </Box>
   )
 }

@@ -107,9 +107,7 @@ describe('ResumeUploadForm', () => {
     await user.click(screen.getByRole('button', { name: /upload resume/i }))
 
     await waitFor(() => {
-      // After successful upload, navigates to /resume/stream/:id
-      // The navigation happens inside the hook — check loading state at least
-      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      expect(screen.getByRole('alert')).toHaveTextContent(/resume uploaded/i)
     })
   })
 
