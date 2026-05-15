@@ -4,6 +4,7 @@ import ErrorRoundedIcon from '@mui/icons-material/ErrorRounded'
 import SellRoundedIcon from '@mui/icons-material/SellRounded'
 import TipsAndUpdatesRoundedIcon from '@mui/icons-material/TipsAndUpdatesRounded'
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded'
+import WarningRoundedIcon from '@mui/icons-material/WarningRounded'
 import {
   Alert,
   Box,
@@ -33,8 +34,12 @@ interface NormalizedAnalysisReport {
   strengths: string[]
   gaps: string[]
   recommendations: string[]
+  updatedSummary: string
+  projectedScore: number
   matchedKeywords: string[]
   missingKeywords: string[]
+  secondaryGaps: string[]
+  matchedSkills: string[]
 }
 
 const STATUS_CHIP: Record<string, ChipProps['color']> = {
@@ -55,7 +60,8 @@ function getStringList(value: unknown): string[] {
 }
 
 function getScore(value: unknown): number {
-  const score = typeof value === 'number' ? value : Number(value)
+  const score = typeof value === 'string' ? Number(value.split('/')[0]) : Number(value)
+
   if (!Number.isFinite(score)) return 0
   return Math.min(100, Math.max(0, score))
 }
@@ -78,25 +84,29 @@ function extractReport(source: unknown): NormalizedAnalysisReport | null {
     : {}
   const skillsGaps = isRecord(src.skillsGaps) ? (src.skillsGaps as Record<string, unknown>) : {}
   const criticalGaps = Array.isArray(skillsGaps.criticalGaps)
-    ? (skillsGaps.criticalGaps as Array<Record<string, unknown>>)
+    ? (skillsGaps.criticalGaps as Array<Record<string, unknown>>).map((gap) => gap.skill)
     : []
+  const secondaryGaps = Array.isArray(skillsGaps.secondaryGaps)
+    ? (skillsGaps.secondaryGaps as Array<Record<string, unknown>>).map((gap) => gap.skill)
+    : []
+  const matchedSkills = Object.values(src.updatedSkillsSection ?? {}).flat()
 
   return {
     score: getScore(src.overallScore ?? src.score),
     summary: getSummary(suggestions.summary ?? src.summary),
     strengths: getStringList(src.strongMatchingPoints ?? src.strengths),
-    gaps: getStringList(
-      criticalGaps.length > 0
-        ? criticalGaps.map((gap) => String(gap.skill ?? ''))
-        : (src.gaps ?? []),
-    ),
+    gaps: getStringList(criticalGaps ?? []),
+    secondaryGaps: getStringList(secondaryGaps ?? []),
     recommendations: getStringList(suggestions.skills ?? src.recommendations),
     matchedKeywords: getStringList(src.strongMatchingPoints ?? src.matchedKeywords),
     missingKeywords: getStringList(
       criticalGaps.length > 0
-        ? criticalGaps.map((gap) => String(gap.skill ?? ''))
+        ? criticalGaps.map((gap: any) => String(gap.skill ?? ''))
         : (src.missingKeywords ?? []),
     ),
+    updatedSummary: getSummary(src.impactfulProfessionalSummary),
+    projectedScore: getScore(src.projectedScoreAfterChanges),
+    matchedSkills: getStringList(matchedSkills),
   }
 }
 
@@ -304,10 +314,32 @@ export default function AnalysisResult() {
                 <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
                   <TrendingUpRoundedIcon color="primary" />
                   <Typography component="h2" variant="h6">
-                    Match Score
+                    Current Score
                   </Typography>
                 </Stack>
                 <Typography color="text.secondary">{report.summary}</Typography>
+              </Box>
+            </Stack>
+          </Card>
+
+          <Card
+            elevation={0}
+            sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: { xs: 2, sm: 3 } }}
+          >
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              spacing={3}
+              sx={{ alignItems: { xs: 'stretch', md: 'center' } }}
+            >
+              <ScoreSummary score={report.projectedScore} />
+              <Box sx={{ flex: 1 }}>
+                <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
+                  <TrendingUpRoundedIcon color="primary" />
+                  <Typography component="h2" variant="h6">
+                    Projected Score
+                  </Typography>
+                </Stack>
+                <Typography color="text.secondary">{report.updatedSummary}</Typography>
               </Box>
             </Stack>
           </Card>
@@ -336,12 +368,22 @@ export default function AnalysisResult() {
               <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1.5 }}>
                 <ErrorRoundedIcon color="error" />
                 <Typography component="h2" variant="h6">
-                  Gaps
+                  Critical Gaps
                 </Typography>
               </Stack>
               <InsightList
                 items={report.gaps}
                 icon={<ErrorRoundedIcon color="error" fontSize="small" />}
+              />
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1.5 }}>
+                <WarningRoundedIcon color="warning" />
+                <Typography component="h2" variant="h6">
+                  Secondary Gaps
+                </Typography>
+              </Stack>
+              <InsightList
+                items={report.secondaryGaps}
+                icon={<WarningRoundedIcon color="warning" fontSize="small" />}
               />
             </Card>
           </Box>
@@ -362,20 +404,20 @@ export default function AnalysisResult() {
             />
           </Card>
 
-          <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' } }}>
-            <Card
-              elevation={0}
-              sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: { xs: 2, sm: 3 } }}
-            >
-              <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1.5 }}>
-                <SellRoundedIcon color="success" />
-                <Typography component="h2" variant="h6">
-                  Matched Keywords
-                </Typography>
-              </Stack>
-              <TagList color="success" items={report.matchedKeywords} />
-            </Card>
-            <Card
+          {/* <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' } }}> */}
+          <Card
+            elevation={0}
+            sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: { xs: 2, sm: 3 } }}
+          >
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1.5 }}>
+              <SellRoundedIcon color="success" />
+              <Typography component="h2" variant="h6">
+                Matched Keywords
+              </Typography>
+            </Stack>
+            <TagList color="success" items={report.matchedSkills} />
+          </Card>
+          {/* <Card
               elevation={0}
               sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: { xs: 2, sm: 3 } }}
             >
@@ -386,8 +428,8 @@ export default function AnalysisResult() {
                 </Typography>
               </Stack>
               <TagList color="error" items={report.missingKeywords} />
-            </Card>
-          </Box>
+            </Card> */}
+          {/* </Box> */}
         </Stack>
       )}
     </Stack>

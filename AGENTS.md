@@ -7,7 +7,7 @@
 2. **Issue Creation** – After this plan is approved, the first step is to create all 50 GitHub issues automatically via MCP/CLI.
 3. **Implementation Flow for Each Issue:**
    - Read the issue description (copied from PLAN.md).
-   - Explore Swagger (`http://localhost:3001/docs`) if API details needed.
+   - Explore Swagger (`https://resumeforge-production-13cd.up.railway.app`) if API details needed.
    - Write code following clean architecture (one responsibility per file/component).
    - Add/update tests (only unit, 100% coverage on ALL coveragec metrics).
    - Run `yarn lint`, `yarn test`, `yarn build`.

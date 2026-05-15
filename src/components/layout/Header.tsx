@@ -121,7 +121,15 @@ export default function Header({ onToggleSidebar, drawerWidth = 280 }: HeaderPro
             >
               UI
             </MenuItem>
-            <MenuItem onClick={() => setGithubAnchor(null)}>Server</MenuItem>
+            <MenuItem
+              component="a"
+              href="https://github.com/adityaparab/ResumeForge"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setGithubAnchor(null)}
+            >
+              Server
+            </MenuItem>
           </Menu>
 
           <NotificationBell />
