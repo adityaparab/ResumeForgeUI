@@ -1,3 +1,4 @@
+import { Box } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
 import { useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router'
@@ -39,9 +40,9 @@ export default function AnalysisStream() {
   if (!analysisId) {
     toast.error('Invalid analysis ID.')
     return (
-      <div role="alert" className="text-destructive">
+      <Box role="alert" color="red.500">
         Invalid analysis ID.
-      </div>
+      </Box>
     )
   }
 
@@ -51,9 +52,9 @@ export default function AnalysisStream() {
 
   if (isStatusLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
+      <Box display="flex" h="64" alignItems="center" justifyContent="center">
         <LoadingSpinner />
-      </div>
+      </Box>
     )
   }
 
