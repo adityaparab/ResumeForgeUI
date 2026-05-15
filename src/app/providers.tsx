@@ -23,10 +23,11 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <ReduxProvider store={store}>
       <QueryClientProvider client={queryClient}>
-        {children}
-        <ThemeProvider />
-        <Toaster closeButton richColors position="top-right" />
-        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+        <ThemeProvider>
+          {children}
+          <Toaster closeButton richColors position="top-right" />
+          {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+        </ThemeProvider>
       </QueryClientProvider>
     </ReduxProvider>
   )

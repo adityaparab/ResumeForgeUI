@@ -6,6 +6,7 @@ import { Provider as ReduxProvider } from 'react-redux'
 import { MemoryRouter } from 'react-router'
 import { Toaster } from 'sonner'
 import { store } from '@/app/store'
+import ThemeProvider from '@/components/common/ThemeProvider'
 
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   initialEntries?: string[]
@@ -28,8 +29,10 @@ function customRender(ui: ReactElement, options?: CustomRenderOptions) {
     wrapper: ({ children }) => (
       <ReduxProvider store={store}>
         <QueryClientProvider client={queryClient}>
-          <MemoryRouter initialEntries={initialEntries ?? ['/']}>{children}</MemoryRouter>
-          <Toaster closeButton />
+          <ThemeProvider>
+            <MemoryRouter initialEntries={initialEntries ?? ['/']}>{children}</MemoryRouter>
+            <Toaster closeButton />
+          </ThemeProvider>
         </QueryClientProvider>
       </ReduxProvider>
     ),
