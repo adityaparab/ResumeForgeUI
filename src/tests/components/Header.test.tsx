@@ -1,14 +1,11 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import { store } from '@/app/store'
 import Header from '@/components/layout/Header'
 import { THEME_KEY } from '@/constants'
-import { logout, setCredentials } from '@/stores/authSlice'
 import { setTheme } from '@/stores/uiSlice'
 import { render } from '@/tests/test-utils'
-
-const mockUser = { id: 'user-1', email: 'user@example.com' }
 
 describe('Header', () => {
   afterEach(() => {
@@ -24,13 +21,9 @@ describe('Header', () => {
     expect(screen.getByText('ResumeForge')).toBeInTheDocument()
   })
 
-  it('shows user email when logged in', () => {
-    store.dispatch(
-      setCredentials({ user: mockUser, accessToken: 'token', refreshToken: 'refresh' }),
-    )
+  it('does not show user email in the header', () => {
     render(<Header />)
-    expect(screen.getByText(mockUser.email)).toBeInTheDocument()
-    store.dispatch(logout())
+    expect(screen.queryByText(/@/)).not.toBeInTheDocument()
   })
 
   it('renders notifications button', () => {
@@ -38,9 +31,9 @@ describe('Header', () => {
     expect(screen.getByRole('button', { name: /notifications/i })).toBeInTheDocument()
   })
 
-  it('renders logout button', () => {
+  it('does not render a sign-out button in the header', () => {
     render(<Header />)
-    expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /sign out/i })).not.toBeInTheDocument()
   })
 
   it('calls onToggleSidebar when hamburger is clicked', async () => {
@@ -57,15 +50,36 @@ describe('Header', () => {
     expect(clicked).toBe(true)
   })
 
-  it('triggers logout mutation on sign out button click', async () => {
-    const user = userEvent.setup()
-    store.dispatch(
-      setCredentials({ user: mockUser, accessToken: 'token', refreshToken: 'refresh' }),
-    )
+  it('renders GitHub repositories button', () => {
     render(<Header />)
-    await user.click(screen.getByRole('button', { name: /sign out/i }))
-    // logout mutation fires, no error thrown
-    store.dispatch(logout())
+    expect(screen.getByRole('button', { name: /github repositories/i })).toBeInTheDocument()
+  })
+
+  it('opens GitHub menu with UI and Server options', async () => {
+    const user = userEvent.setup()
+    render(<Header />)
+    await user.click(screen.getByRole('button', { name: /github repositories/i }))
+    expect(screen.getByRole('menuitem', { name: /^ui$/i })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: /^server$/i })).toBeInTheDocument()
+  })
+
+  it('closes GitHub menu when an item is clicked', async () => {
+    const user = userEvent.setup()
+    render(<Header />)
+    await user.click(screen.getByRole('button', { name: /github repositories/i }))
+    await user.click(screen.getByRole('menuitem', { name: /^server$/i }))
+    await waitFor(() => {
+      expect(screen.queryByRole('menuitem', { name: /^server$/i })).not.toBeInTheDocument()
+    })
+  })
+
+  it('UI GitHub link points to the correct repo', async () => {
+    const user = userEvent.setup()
+    render(<Header />)
+    await user.click(screen.getByRole('button', { name: /github repositories/i }))
+    const uiLink = screen.getByRole('menuitem', { name: /^ui$/i })
+    expect(uiLink).toHaveAttribute('href', 'https://github.com/adityaparab/ResumeForgeUI')
+    expect(uiLink).toHaveAttribute('target', '_blank')
   })
 
   it('toggles theme when dark mode button is clicked', async () => {

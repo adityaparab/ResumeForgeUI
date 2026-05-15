@@ -16,6 +16,8 @@ const meta = {
   args: {
     isOpen: true,
     onClose: fn(),
+    isCollapsed: false,
+    onToggleCollapse: fn(),
   },
   decorators: [
     (Story) => (
