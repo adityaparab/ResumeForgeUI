@@ -1,12 +1,10 @@
+import { Badge, Box, Button, Card, Heading, HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, Download } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { EditableStructuredContent } from '@/features/resume/components/EditableStructuredContent'
 import { analysisApi, resumeApi } from '@/lib/api-client'
 import type { StructuredContent } from '@/lib/schemas/resume.schema'
@@ -81,77 +79,86 @@ export default function ResumeDetail() {
 
   if (!resumeId) {
     return (
-      <div role="alert" className="text-destructive">
+      <Box role="alert" color="red.500">
         Invalid resume ID.
-      </div>
+      </Box>
     )
   }
 
   if (isLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
+      <Box display="flex" h="64" alignItems="center" justifyContent="center">
         <LoadingSpinner />
-      </div>
+      </Box>
     )
   }
 
   if (isError || !resume) {
     return (
-      <div
+      <Box
         role="alert"
-        className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        borderRadius="lg"
+        borderWidth="1px"
+        borderColor="red.200"
+        bg="red.subtle"
+        px={4}
+        py={3}
+        fontSize="sm"
+        color="red.600"
       >
         Failed to load resume.
-      </div>
+      </Box>
     )
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => navigate('/resume')}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft className="size-4" />
-          Back to Resumes
-        </button>
-      </div>
+  const statusColor =
+    resume.status === 'completed' ? 'green' : resume.status === 'failed' ? 'red' : 'yellow'
 
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{resume.originalName}</h1>
-          <p className="mt-1 font-mono text-sm text-muted-foreground">{resumeId}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge
-            variant={
-              resume.status === 'completed'
-                ? 'success'
-                : resume.status === 'failed'
-                  ? 'destructive'
-                  : 'warning'
-            }
-          >
+  return (
+    <VStack gap={6} align="stretch">
+      <Box>
+        <Button type="button" variant="ghost" size="sm" onClick={() => navigate('/resume')}>
+          <Icon as={ChevronLeft} />
+          Back to Resumes
+        </Button>
+      </Box>
+
+      <HStack justify="space-between" align="flex-start" gap={4} wrap="wrap">
+        <Box>
+          <Heading size="2xl" fontWeight="bold">
+            {resume.originalName}
+          </Heading>
+          <Text mt={1} fontFamily="mono" fontSize="sm" color="fg.muted">
+            {resumeId}
+          </Text>
+        </Box>
+        <HStack gap={2}>
+          <Badge colorPalette={statusColor} variant="subtle">
             {resume.status}
           </Badge>
           {resume.status === 'completed' && hasAnalysisResult && (
-            <Button variant="outline" size="lg" onClick={handleDownload}>
-              <Download className="size-4" />
+            <Button variant="outline" size="sm" onClick={handleDownload}>
+              <Icon as={Download} />
               Download
             </Button>
           )}
-        </div>
-      </div>
+        </HStack>
+      </HStack>
 
       {resume.status === 'failed' && !resume.structuredContent && (
-        <div
+        <Box
           role="alert"
-          className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+          borderRadius="lg"
+          borderWidth="1px"
+          borderColor="red.200"
+          bg="red.subtle"
+          px={4}
+          py={3}
+          fontSize="sm"
+          color="red.600"
         >
           {resume.error ?? 'Resume extraction failed.'}
-        </div>
+        </Box>
       )}
 
       {draftContent ? (
@@ -164,12 +171,16 @@ export default function ResumeDetail() {
           onSubmit={() => updateResumeMutation.mutate(draftContent)}
         />
       ) : resume.status !== 'failed' ? (
-        <Card className="px-4 py-8 text-center text-muted-foreground">
-          {resume.status === 'completed'
-            ? 'No structured content available.'
-            : 'Resume is still being processed.'}
-        </Card>
+        <Card.Root variant="outline" borderRadius="xl">
+          <Card.Body px={4} py={8} textAlign="center">
+            <Text color="fg.muted">
+              {resume.status === 'completed'
+                ? 'No structured content available.'
+                : 'Resume is still being processed.'}
+            </Text>
+          </Card.Body>
+        </Card.Root>
       ) : null}
-    </div>
+    </VStack>
   )
 }

@@ -1,11 +1,18 @@
+import {
+  Box,
+  Button,
+  Card,
+  Grid,
+  HStack,
+  Icon,
+  Input,
+  Text,
+  Textarea,
+  VStack,
+} from '@chakra-ui/react'
 import { RotateCcw, Save } from 'lucide-react'
 import { useId } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import type { StructuredContent } from '@/lib/schemas/resume.schema'
-import { cn } from '@/lib/utils'
 
 type PathSegment = string | number
 
@@ -106,16 +113,16 @@ function EditableField({
   const id = useId()
 
   return (
-    <div className="grid gap-1.5 text-sm">
-      <label htmlFor={id} className="font-medium text-muted-foreground">
+    <Box display="grid" gap={1.5} fontSize="sm">
+      <Text as="label" htmlFor={id} fontWeight="medium" color="fg.muted">
         {label}
-      </label>
+      </Text>
       {multiline ? (
         <Textarea id={id} value={value} onChange={(event) => onChange(event.target.value)} />
       ) : (
         <Input id={id} value={value} onChange={(event) => onChange(event.target.value)} />
       )}
-    </div>
+    </Box>
   )
 }
 
@@ -158,14 +165,18 @@ function EditableValue({
 
     const records = value.filter(isRecord)
     return (
-      <div className="space-y-4">
+      <VStack gap={4} align="stretch">
         {records.map((item, index) => (
-          <div
+          <Box
             // biome-ignore lint/suspicious/noArrayIndexKey: structured resume arrays do not include stable IDs
             key={index}
-            className="rounded-lg border border-border/70 bg-background/60 p-4"
+            borderRadius="lg"
+            borderWidth="1px"
+            borderColor="border.subtle"
+            bg="bg"
+            p={4}
           >
-            <div className="grid gap-4 md:grid-cols-2">
+            <Grid gap={4} templateColumns={{ md: 'repeat(2, 1fr)' }}>
               {Object.entries(item).map(([childKey, childValue]) => (
                 <EditableValue
                   key={childKey}
@@ -176,15 +187,15 @@ function EditableValue({
                   onChange={onChange}
                 />
               ))}
-            </div>
-          </div>
+            </Grid>
+          </Box>
         ))}
-      </div>
+      </VStack>
     )
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <Grid gap={4} templateColumns={{ md: 'repeat(2, 1fr)' }}>
       {Object.entries(value as Record<string, unknown>).map(([childKey, childValue]) => (
         <EditableValue
           key={childKey}
@@ -195,7 +206,7 @@ function EditableValue({
           onChange={onChange}
         />
       ))}
-    </div>
+    </Grid>
   )
 }
 
@@ -210,43 +221,52 @@ export function EditableStructuredContent({
   const sections = Object.entries(content).filter(([, value]) => hasRenderableValue(value))
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-end gap-2">
+    <VStack gap={6} align="stretch">
+      <HStack justify="flex-end" wrap="wrap" gap={2}>
         <Button
           type="button"
           variant="outline"
           onClick={onReset}
           disabled={!isDirty || isSubmitting}
         >
-          <RotateCcw className="size-4" />
+          <Icon as={RotateCcw} />
           Reset
         </Button>
-        <Button type="button" onClick={onSubmit} disabled={!isDirty || isSubmitting}>
-          <Save className="size-4" />
+        <Button
+          type="button"
+          colorPalette="purple"
+          onClick={onSubmit}
+          disabled={!isDirty || isSubmitting}
+        >
+          <Icon as={Save} />
           Save changes
         </Button>
-      </div>
+      </HStack>
 
       {sections.length > 0 ? (
         sections.map(([sectionKey, sectionValue]) => (
-          <Card key={sectionKey} className="p-6">
-            <h2 className="mb-4 text-base font-semibold text-foreground">
-              {formatSectionTitle(sectionKey)}
-            </h2>
-            <EditableValue
-              content={content}
-              label={sectionKey}
-              path={[sectionKey]}
-              value={sectionValue}
-              onChange={onChange}
-            />
-          </Card>
+          <Card.Root key={sectionKey} variant="outline" borderRadius="xl">
+            <Card.Body p={6}>
+              <Text mb={4} fontSize="base" fontWeight="semibold">
+                {formatSectionTitle(sectionKey)}
+              </Text>
+              <EditableValue
+                content={content}
+                label={sectionKey}
+                path={[sectionKey]}
+                value={sectionValue}
+                onChange={onChange}
+              />
+            </Card.Body>
+          </Card.Root>
         ))
       ) : (
-        <Card className={cn('px-4 py-8 text-center text-muted-foreground')}>
-          No structured fields available.
-        </Card>
+        <Card.Root variant="outline" borderRadius="xl">
+          <Card.Body px={4} py={8} textAlign="center">
+            <Text color="fg.muted">No structured fields available.</Text>
+          </Card.Body>
+        </Card.Root>
       )}
-    </div>
+    </VStack>
   )
 }

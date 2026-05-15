@@ -1,7 +1,6 @@
+import { Box, Button, HStack, Icon, Spinner, Text, VStack } from '@chakra-ui/react'
 import { Upload, X } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import { useResumeUploadMutation } from '../hooks/useResumeUploadMutation'
 
 const ACCEPTED_MIME_TYPES = [
@@ -89,18 +88,24 @@ export function ResumeUploadForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate aria-label="Upload resume">
-      <div className="space-y-4">
+    <Box as="form" onSubmit={handleSubmit} noValidate aria-label="Upload resume">
+      <VStack gap={4} align="stretch">
         {/* Drop zone */}
-        {/* biome-ignore lint/a11y/useSemanticElements: div needed for drag-and-drop with nested input */}
-        <div
-          className={cn(
-            'flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 text-center transition-colors',
-            isDragging
-              ? 'border-primary bg-primary/5'
-              : 'border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50',
-            file && 'border-primary/50 bg-primary/5',
-          )}
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          borderRadius="xl"
+          borderWidth="2px"
+          borderStyle="dashed"
+          borderColor={isDragging || file ? 'purple.500' : 'border.subtle'}
+          bg={isDragging || file ? 'purple.subtle' : 'bg.subtle'}
+          p={10}
+          textAlign="center"
+          cursor="pointer"
+          transition="all 0.15s"
+          _hover={{ borderColor: 'purple.400', bg: 'bg.subtle' }}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -112,37 +117,41 @@ export function ResumeUploadForm() {
             if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click()
           }}
         >
-          <Upload className="mb-3 size-10 text-muted-foreground" />
+          <Icon as={Upload} boxSize={10} color="fg.muted" mb={3} />
           {file ? (
-            <p className="text-sm font-medium text-foreground">{file.name}</p>
+            <Text fontSize="sm" fontWeight="medium">
+              {file.name}
+            </Text>
           ) : (
             <>
-              <p className="text-sm font-medium text-foreground">
+              <Text fontSize="sm" fontWeight="medium">
                 Drop your resume here or click to browse
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">PDF or DOCX · max 5 MB</p>
+              </Text>
+              <Text mt={1} fontSize="xs" color="fg.muted">
+                PDF or DOCX · max 5 MB
+              </Text>
             </>
           )}
           <input
             ref={inputRef}
             type="file"
-            className="sr-only"
+            style={{ display: 'none' }}
             accept={ACCEPTED_EXTENSIONS.join(',')}
             onChange={handleInputChange}
             aria-label="File input"
             data-testid="file-input"
           />
-        </div>
+        </Box>
 
         {/* Validation error */}
         {fileError && (
-          <p className="text-xs text-destructive" role="alert">
+          <Text fontSize="xs" color="red.500" role="alert">
             {fileError}
-          </p>
+          </Text>
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3">
+        <HStack justify="flex-end" gap={3}>
           {file && (
             <Button
               type="button"
@@ -151,19 +160,26 @@ export function ResumeUploadForm() {
               onClick={handleReset}
               aria-label="Remove selected file"
             >
-              <X className="mr-1 size-4" />
+              <Icon as={X} />
               Remove
             </Button>
           )}
           <Button
             type="submit"
+            colorPalette="purple"
             disabled={!file || uploadMutation.isPending}
             aria-busy={uploadMutation.isPending}
           >
-            {uploadMutation.isPending ? 'Uploading…' : 'Upload Resume'}
+            {uploadMutation.isPending ? (
+              <>
+                <Spinner size="sm" /> Uploading…
+              </>
+            ) : (
+              'Upload Resume'
+            )}
           </Button>
-        </div>
-      </div>
-    </form>
+        </HStack>
+      </VStack>
+    </Box>
   )
 }

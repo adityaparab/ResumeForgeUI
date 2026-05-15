@@ -1,19 +1,18 @@
+import { Badge, Box, Button, Card, Heading, Text, VStack } from '@chakra-ui/react'
 import type { ColumnDef } from '@tanstack/react-table'
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { DataTable } from '@/components/ui/data-table'
 import { ResumeUploadForm } from '@/features/resume/components/ResumeUploadForm'
 import { useResumesList } from '@/features/resume/hooks/useResumesList'
 import type { Resume } from '@/lib/schemas/resume.schema'
 
-const STATUS_CLASSES: Record<string, string> = {
-  completed: 'bg-green-100 text-green-800',
-  processing: 'bg-blue-100 text-blue-800',
-  pending: 'bg-yellow-100 text-yellow-800',
-  queued: 'bg-yellow-100 text-yellow-800',
-  failed: 'bg-red-100 text-red-800',
+const STATUS_COLOR: Record<string, string> = {
+  completed: 'green',
+  processing: 'blue',
+  pending: 'yellow',
+  queued: 'yellow',
+  failed: 'red',
 }
 
 const ONGOING_STATUSES = new Set(['pending', 'processing', 'queued'])
@@ -31,7 +30,11 @@ export default function ResumeList() {
       {
         accessorKey: 'originalName',
         header: 'File Name',
-        cell: ({ getValue }) => <span className="font-medium text-sm">{getValue() as string}</span>,
+        cell: ({ getValue }) => (
+          <Text fontWeight="medium" fontSize="sm">
+            {getValue() as string}
+          </Text>
+        ),
       },
       {
         accessorKey: 'mimeType',
@@ -39,7 +42,11 @@ export default function ResumeList() {
         cell: ({ getValue }) => {
           const mime = getValue() as string
           const label = mime.includes('pdf') ? 'PDF' : 'DOCX'
-          return <span className="text-xs text-muted-foreground">{label}</span>
+          return (
+            <Text fontSize="xs" color="fg.muted">
+              {label}
+            </Text>
+          )
         },
       },
       {
@@ -47,11 +54,11 @@ export default function ResumeList() {
         header: 'Status',
         cell: ({ getValue }) => {
           const status = getValue() as string
-          const cls = STATUS_CLASSES[status] ?? 'bg-gray-100 text-gray-800'
+          const colorPalette = STATUS_COLOR[status] ?? 'gray'
           return (
-            <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>
+            <Badge colorPalette={colorPalette} variant="subtle" size="sm">
               {status}
-            </span>
+            </Badge>
           )
         },
       },
@@ -60,7 +67,11 @@ export default function ResumeList() {
         header: 'Uploaded',
         cell: ({ getValue }) => {
           const d = new Date(getValue() as string)
-          return <span className="text-sm text-muted-foreground">{d.toLocaleDateString()}</span>
+          return (
+            <Text fontSize="sm" color="fg.muted">
+              {d.toLocaleDateString()}
+            </Text>
+          )
         },
       },
       {
@@ -69,12 +80,13 @@ export default function ResumeList() {
         cell: ({ row }) => {
           const resume = row.original
           return (
-            <div className="flex gap-2">
+            <Box display="flex" gap={2}>
               {resume.status === 'completed' && (
                 <Button
                   type="button"
-                  variant="link"
+                  variant="ghost"
                   size="xs"
+                  colorPalette="purple"
                   onClick={() => navigate(`/resume/${resume.id}`)}
                 >
                   View
@@ -83,8 +95,9 @@ export default function ResumeList() {
               {isOngoingStatus(resume.status) && (
                 <Button
                   type="button"
-                  variant="link"
+                  variant="ghost"
                   size="xs"
+                  colorPalette="blue"
                   onClick={() => navigate(`/resume/stream/${resume.id}`)}
                 >
                   View Stream
@@ -93,8 +106,9 @@ export default function ResumeList() {
               {resume.status === 'failed' && (
                 <Button
                   type="button"
-                  variant="link"
+                  variant="ghost"
                   size="xs"
+                  colorPalette="red"
                   onClick={() => navigate(`/resume/${resume.id}`)}
                 >
                   Failure Details
@@ -103,9 +117,11 @@ export default function ResumeList() {
               {resume.status !== 'completed' &&
                 !isOngoingStatus(resume.status) &&
                 resume.status !== 'failed' && (
-                  <span className="text-muted-foreground text-xs">No actions</span>
+                  <Text color="fg.muted" fontSize="xs">
+                    No actions
+                  </Text>
                 )}
-            </div>
+            </Box>
           )
         },
       },
@@ -114,30 +130,40 @@ export default function ResumeList() {
   )
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Resumes</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Upload and manage your resumes</p>
-      </div>
+    <VStack gap={8} align="stretch">
+      <Box>
+        <Heading size="2xl" fontWeight="bold">
+          Resumes
+        </Heading>
+        <Text mt={1} fontSize="sm" color="fg.muted">
+          Upload and manage your resumes
+        </Text>
+      </Box>
 
-      <section aria-label="Upload a new resume">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">Upload New Resume</h2>
-        <Card className="p-6">
-          <ResumeUploadForm />
-        </Card>
-      </section>
+      <Box as="section" aria-label="Upload a new resume">
+        <Heading size="lg" fontWeight="semibold" mb={4}>
+          Upload New Resume
+        </Heading>
+        <Card.Root variant="outline" borderRadius="xl">
+          <Card.Body p={6}>
+            <ResumeUploadForm />
+          </Card.Body>
+        </Card.Root>
+      </Box>
 
-      <section aria-label="Your resumes">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">Your Resumes</h2>
-        <Card>
+      <Box as="section" aria-label="Your resumes">
+        <Heading size="lg" fontWeight="semibold" mb={4}>
+          Your Resumes
+        </Heading>
+        <Card.Root variant="outline" borderRadius="xl">
           <DataTable
             columns={columns}
             data={data?.data ?? []}
             isLoading={isLoading}
             emptyMessage="No resumes yet. Upload one above to get started."
           />
-        </Card>
-      </section>
-    </div>
+        </Card.Root>
+      </Box>
+    </VStack>
   )
 }
