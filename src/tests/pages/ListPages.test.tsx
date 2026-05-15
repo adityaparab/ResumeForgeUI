@@ -83,7 +83,50 @@ describe('ResumeList', () => {
     render(<ResumeList />)
     await waitFor(() => {
       expect(screen.getByText('unknown-status')).toBeInTheDocument()
+      expect(screen.getByText('No actions')).toBeInTheDocument()
     })
+  })
+
+  it('shows stream action for ongoing resumes and hides View', async () => {
+    const user = userEvent.setup()
+    server.use(
+      http.get(`${API_URL}/resume`, () =>
+        HttpResponse.json({
+          data: [{ ...mockResume, status: 'processing' }],
+          total: 1,
+          page: 1,
+          limit: 20,
+        }),
+      ),
+    )
+    render(<ResumeList />)
+    await waitFor(() => {
+      expect(screen.getByText('processing')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /view stream/i })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /^view$/i })).not.toBeInTheDocument()
+    })
+    await user.click(screen.getByRole('button', { name: /view stream/i })).catch(() => {})
+  })
+
+  it('shows failure details action for failed resumes and hides View', async () => {
+    const user = userEvent.setup()
+    server.use(
+      http.get(`${API_URL}/resume`, () =>
+        HttpResponse.json({
+          data: [{ ...mockResume, status: 'failed', error: 'Extraction failed' }],
+          total: 1,
+          page: 1,
+          limit: 20,
+        }),
+      ),
+    )
+    render(<ResumeList />)
+    await waitFor(() => {
+      expect(screen.getByText('failed')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /failure details/i })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /^view$/i })).not.toBeInTheDocument()
+    })
+    await user.click(screen.getByRole('button', { name: /failure details/i })).catch(() => {})
   })
 
   it('shows DOCX type label', async () => {

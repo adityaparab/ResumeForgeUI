@@ -203,15 +203,24 @@ export default function ResumeDetail() {
         </div>
       </div>
 
+      {resume.status === 'failed' && !resume.structuredContent && (
+        <div
+          role="alert"
+          className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        >
+          {resume.error ?? 'Resume extraction failed.'}
+        </div>
+      )}
+
       {resume.structuredContent ? (
         <StructuredContentView content={resume.structuredContent} />
-      ) : (
+      ) : resume.status !== 'failed' ? (
         <div className="rounded-xl border border-border bg-card px-4 py-8 text-center text-muted-foreground">
           {resume.status === 'completed'
             ? 'No structured content available.'
             : 'Resume is still being processed.'}
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

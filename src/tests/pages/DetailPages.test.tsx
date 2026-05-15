@@ -271,7 +271,27 @@ describe('ResumeDetail', () => {
     })
   })
 
-  it('shows failed status badge (red CSS class)', async () => {
+  it('shows failed resume error details', async () => {
+    server.use(
+      http.get(`${API_URL}/resume/:id`, () =>
+        HttpResponse.json({
+          ...mockResume,
+          status: 'failed',
+          structuredContent: null,
+          error: 'Extraction failed due to invalid document',
+        }),
+      ),
+    )
+    render(<ResumeDetail />)
+    await waitFor(() => {
+      expect(screen.getByText('failed')).toBeInTheDocument()
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Extraction failed due to invalid document',
+      )
+    })
+  })
+
+  it('shows fallback failed resume error details', async () => {
     server.use(
       http.get(`${API_URL}/resume/:id`, () =>
         HttpResponse.json({ ...mockResume, status: 'failed', structuredContent: null }),
@@ -279,7 +299,7 @@ describe('ResumeDetail', () => {
     )
     render(<ResumeDetail />)
     await waitFor(() => {
-      expect(screen.getByText('failed')).toBeInTheDocument()
+      expect(screen.getByRole('alert')).toHaveTextContent('Resume extraction failed.')
     })
   })
 

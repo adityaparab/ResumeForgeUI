@@ -7,7 +7,7 @@ import {
   mockUploadResume,
 } from './helpers'
 
-const API = 'http://localhost:3001/api/v1'
+const API = '**/api/**'
 
 test.describe('Resume Flow', () => {
   test.beforeEach(async ({ page }) => {
@@ -28,6 +28,25 @@ test.describe('Resume Flow', () => {
       await mockResumeList(page)
       await page.goto('/resume')
       await expect(page.getByText('my-resume.pdf')).toBeVisible()
+      await expect(page.getByRole('button', { name: 'View' })).toBeVisible()
+    })
+
+    test('shows stream action for in-progress resumes only', async ({ page }) => {
+      await mockResumeList(page, [{ ...MOCK_RESUME, status: 'processing' }])
+      await page.goto('/resume')
+      await expect(page.getByRole('button', { name: 'View Stream' })).toBeVisible()
+      await expect(page.getByRole('button', { name: 'View', exact: true })).toHaveCount(0)
+      await page.getByRole('button', { name: 'View Stream' }).click()
+      await expect(page).toHaveURL(new RegExp(`/resume/stream/${MOCK_RESUME.id}`))
+    })
+
+    test('shows failure details action for failed resumes only', async ({ page }) => {
+      await mockResumeList(page, [{ ...MOCK_RESUME, status: 'failed' }])
+      await page.goto('/resume')
+      await expect(page.getByRole('button', { name: 'Failure Details' })).toBeVisible()
+      await expect(page.getByRole('button', { name: 'View', exact: true })).toHaveCount(0)
+      await page.getByRole('button', { name: 'Failure Details' }).click()
+      await expect(page).toHaveURL(new RegExp(`/resume/${MOCK_RESUME.id}`))
     })
 
     test('shows upload form section', async ({ page }) => {

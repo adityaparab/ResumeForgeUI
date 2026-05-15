@@ -1,6 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table'
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
+import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
 import { ResumeUploadForm } from '@/features/resume/components/ResumeUploadForm'
 import { useResumesList } from '@/features/resume/hooks/useResumesList'
@@ -10,7 +11,14 @@ const STATUS_CLASSES: Record<string, string> = {
   completed: 'bg-green-100 text-green-800',
   processing: 'bg-blue-100 text-blue-800',
   pending: 'bg-yellow-100 text-yellow-800',
+  queued: 'bg-yellow-100 text-yellow-800',
   failed: 'bg-red-100 text-red-800',
+}
+
+const ONGOING_STATUSES = new Set(['pending', 'processing', 'queued'])
+
+function isOngoingStatus(status: string) {
+  return ONGOING_STATUSES.has(status)
 }
 
 export default function ResumeList() {
@@ -61,13 +69,41 @@ export default function ResumeList() {
           const resume = row.original
           return (
             <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => navigate(`/resume/${resume.id}`)}
-                className="text-xs font-medium text-primary hover:underline"
-              >
-                View
-              </button>
+              {resume.status === 'completed' && (
+                <Button
+                  type="button"
+                  variant="link"
+                  size="xs"
+                  onClick={() => navigate(`/resume/${resume.id}`)}
+                >
+                  View
+                </Button>
+              )}
+              {isOngoingStatus(resume.status) && (
+                <Button
+                  type="button"
+                  variant="link"
+                  size="xs"
+                  onClick={() => navigate(`/resume/stream/${resume.id}`)}
+                >
+                  View Stream
+                </Button>
+              )}
+              {resume.status === 'failed' && (
+                <Button
+                  type="button"
+                  variant="link"
+                  size="xs"
+                  onClick={() => navigate(`/resume/${resume.id}`)}
+                >
+                  Failure Details
+                </Button>
+              )}
+              {resume.status !== 'completed' &&
+                !isOngoingStatus(resume.status) &&
+                resume.status !== 'failed' && (
+                  <span className="text-muted-foreground text-xs">No actions</span>
+                )}
             </div>
           )
         },
