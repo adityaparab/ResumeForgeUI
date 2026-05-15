@@ -8,7 +8,7 @@ import {
   mockDashboardAPIs,
 } from './helpers'
 
-const API = 'http://localhost:3001/api/v1'
+const API = '**/api/**'
 
 test.describe('Analysis Flow', () => {
   test.beforeEach(async ({ page }) => {

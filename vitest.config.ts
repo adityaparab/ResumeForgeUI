@@ -16,6 +16,7 @@ export default defineConfig({
         'src/**/*.{test,spec}.{ts,tsx}',
         'src/tests/**',
         'src/main.tsx',
+        'src/**/*.stories.{ts,tsx,mdx}',
         'vite-env.d.ts',
         'src/lib/schemas/index.ts',
         'src/routes/ProtectedRoute.tsx',

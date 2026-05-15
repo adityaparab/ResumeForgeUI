@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-const API = 'http://localhost:3001/api/v1'
+const API = '**/api/**'
 
 test.describe('Authentication', () => {
   test.describe('Login', () => {

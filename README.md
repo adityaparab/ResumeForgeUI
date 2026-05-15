@@ -98,6 +98,21 @@ yarn build
 yarn preview
 ```
 
+## Storybook
+
+```bash
+# Start component workbench
+yarn storybook
+
+# Build static Storybook
+yarn build-storybook
+
+# Publish visual regression build through Chromatic
+yarn chromatic
+```
+
+Chromatic CI uses the `CHROMATIC_PROJECT_TOKEN` repository secret when it is configured.
+
 ## Linting
 
 ```bash

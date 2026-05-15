@@ -64,7 +64,7 @@
 12. **#12** - Responsive Sidebar (Dashboard, Analyze, Resumes, Settings) with active state and mobile drawer.
 13. **#13** - Main layout wrapper with sidebar + outlet, dark mode toggle, responsive breakpoints.
 14. **#14** - Notification system (badge + dropdown for ongoing resume activities) using TanStack Query polling/subscription. **Done:** Header notification bell now shows unread counts, lists active and completed jobs, polls resume/analysis status, supports read/dismiss/clear actions, and raises persistent terminal toasts.
-15. **#15** - Storybook setup for Header, Sidebar, Layout components + Chromatic integration.
+15. **#15** - Storybook setup for Header, Sidebar, Layout components + Chromatic integration. **Done:** Storybook 8 React/Vite configuration now wraps stories with app providers, includes Header/Sidebar/MainLayout plus common component stories, documents Storybook commands, and adds Chromatic CI publishing when `CHROMATIC_PROJECT_TOKEN` is configured.
 
 ### Phase 2: Core Features - Dashboard & Upload/Analyze Components (Issues #16–#25)
 16. **#16** - Dashboard page: summary cards (resumes uploaded, analysed), reusable stats component.
