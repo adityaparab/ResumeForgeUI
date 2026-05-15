@@ -98,7 +98,7 @@ export async function mockResumeList(page: Page, resumes = [MOCK_RESUME]) {
 }
 
 export async function mockUploadResume(page: Page) {
-  await page.route(`${API}/resume`, (route: Route) => {
+  await page.route(`${API}/resume/upload`, (route: Route) => {
     if (route.request().method() === 'POST') {
       return route.fulfill({
         status: 201,

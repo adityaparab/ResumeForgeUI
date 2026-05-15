@@ -107,6 +107,14 @@
 49. **#49** - Final lint, type-check, build verification.
 50. **#50** - Release v1.0.0 + demo deployment link.
 
+### Post-Plan Gap Remediation (Issues #51–#56)
+51. **#51** - Gap Stage 2: Analysis page status-aware actions and upload fallback. **Done:** Analysis history now shows stream-only actions for queued/pending/processing analyses, result/interview actions only for completed analyses, failure details for failed analyses, and an upload-resume fallback when no completed resumes exist. Uploading from the fallback navigates to the resume stream workflow.
+52. **#52** - Gap Stage 3: Resume page status-aware actions and failure routing.
+53. **#53** - Gap Stage 4: Stream display chunk rendering and auto-follow scroll.
+54. **#54** - Gap Stage 5: Repair analysis and resume detail screens.
+55. **#55** - Gap Stage 6: Repair header controls and simplify dashboard.
+56. **#56** - Gap Stage 7: Modernize UI with shadcn and ai-elements components.
+
 **Workflow Rule (enforced via GitHub MCP):**
 - GitHub username is `adityaparab` and target repo name is `ResumeForgeUI`
 - Each issue must be worked on **one at a time**.

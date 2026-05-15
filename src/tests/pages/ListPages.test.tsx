@@ -120,6 +120,29 @@ describe('AnalysisList', () => {
     expect(screen.getByRole('region', { name: /start a new analysis/i })).toBeInTheDocument()
   })
 
+  it('renders analyze form when completed resumes are available', async () => {
+    server.use(
+      http.get(`${API_URL}/resume`, () =>
+        HttpResponse.json({ data: [mockResume], total: 1, page: 1, limit: 100 }),
+      ),
+    )
+    render(<AnalysisList />)
+    await waitFor(() => {
+      expect(screen.getByLabelText('Job Description')).toBeInTheDocument()
+    })
+  })
+
+  it('renders upload fallback when no completed resumes are available', async () => {
+    render(<AnalysisList />)
+    await waitFor(() => {
+      expect(
+        screen.getByRole('region', { name: /upload resume for analysis/i }),
+      ).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /upload resume/i })).toBeInTheDocument()
+      expect(screen.getByText(/drop your resume here/i)).toBeInTheDocument()
+    })
+  })
+
   it('renders history section', () => {
     render(<AnalysisList />)
     expect(screen.getByRole('region', { name: /analysis history/i })).toBeInTheDocument()
@@ -197,10 +220,12 @@ describe('AnalysisList', () => {
     render(<AnalysisList />)
     await waitFor(() => {
       expect(screen.getByText('unknown-status')).toBeInTheDocument()
+      expect(screen.getByText('No actions')).toBeInTheDocument()
     })
   })
 
-  it('does not show action buttons for non-completed analyses', async () => {
+  it('shows stream action for ongoing analyses and hides success actions', async () => {
+    const user = userEvent.setup()
     server.use(
       http.get(`${API_URL}/analysis`, () =>
         HttpResponse.json({
@@ -214,7 +239,32 @@ describe('AnalysisList', () => {
     render(<AnalysisList />)
     await waitFor(() => {
       expect(screen.getByText('processing')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /view stream/i })).toBeInTheDocument()
       expect(screen.queryByRole('button', { name: /view result/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /interview prep/i })).not.toBeInTheDocument()
     })
+    await user.click(screen.getByRole('button', { name: /view stream/i })).catch(() => {})
+  })
+
+  it('shows failure details action for failed analyses', async () => {
+    const user = userEvent.setup()
+    server.use(
+      http.get(`${API_URL}/analysis`, () =>
+        HttpResponse.json({
+          data: [{ ...mockAnalysis, status: 'failed', error: 'Analysis failed' }],
+          total: 1,
+          page: 1,
+          limit: 20,
+        }),
+      ),
+    )
+    render(<AnalysisList />)
+    await waitFor(() => {
+      expect(screen.getByText('failed')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /failure details/i })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /view result/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /interview prep/i })).not.toBeInTheDocument()
+    })
+    await user.click(screen.getByRole('button', { name: /failure details/i })).catch(() => {})
   })
 })
