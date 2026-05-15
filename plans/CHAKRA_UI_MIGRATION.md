@@ -57,7 +57,7 @@ The full migration produces:
 
 ---
 
-### 🔲 Step 1 — Foundation: LoadingSpinner + ErrorBoundary
+### ✅ Step 1 — Foundation: LoadingSpinner + ErrorBoundary *(commit `dae699d`)*
 - **Issue:** [#59 feat(ui): Step 1 — Migrate LoadingSpinner & ErrorBoundary to Chakra UI](https://github.com/adityaparab/ResumeForgeUI/issues/59)
 - **Files:** `src/components/common/LoadingSpinner.tsx`, `src/components/common/ErrorBoundary.tsx`
 - **Key changes:**
@@ -174,7 +174,7 @@ Final step creates a PR: `ui-upgrade` → `main` with migration summary.
 | Step | Status | Issue | Commit |
 |---|---|---|---|
 | 0 – Login Page (pilot) | ✅ Done | N/A | `8606846` |
-| 1 – Foundation | 🔲 Todo | [#59](https://github.com/adityaparab/ResumeForgeUI/issues/59) | — |
+| 1 – Foundation | ✅ Done | [#59](https://github.com/adityaparab/ResumeForgeUI/issues/59) | `dae699d` |
 | 2 – Layout | 🔲 Todo | [#57](https://github.com/adityaparab/ResumeForgeUI/issues/57) | — |
 | 3 – Register Page | 🔲 Todo | [#58](https://github.com/adityaparab/ResumeForgeUI/issues/58) | — |
 | 4 – Utility Pages | 🔲 Todo | [#60](https://github.com/adityaparab/ResumeForgeUI/issues/60) | — |

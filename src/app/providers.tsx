@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { Provider as ReduxProvider } from 'react-redux'
 import { Toaster } from 'sonner'
 import ThemeProvider from '@/components/common/ThemeProvider'
+import { ChakraAppProvider } from '@/components/ui/chakra-provider'
 import { store } from './store'
 
 const queryClient = new QueryClient({
@@ -23,10 +24,12 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <ReduxProvider store={store}>
       <QueryClientProvider client={queryClient}>
-        {children}
-        <ThemeProvider />
-        <Toaster closeButton richColors position="top-right" />
-        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+        <ChakraAppProvider>
+          {children}
+          <ThemeProvider />
+          <Toaster closeButton richColors position="top-right" />
+          {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+        </ChakraAppProvider>
       </QueryClientProvider>
     </ReduxProvider>
   )
