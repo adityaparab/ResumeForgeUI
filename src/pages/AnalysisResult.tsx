@@ -36,17 +36,39 @@ function getSummary(value: unknown): string {
   return typeof value === 'string' && value.trim() ? value : 'No summary available.'
 }
 
-function getAnalysisReport(result: unknown): NormalizedAnalysisReport | null {
-  if (!isRecord(result)) return null
-  const source = isRecord(result.analysisReport) ? result.analysisReport : result
+const getAnalysisReport = (input: unknown): NormalizedAnalysisReport | null => {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return null
+  const record = input as Record<string, unknown>
+  const source = isRecord(record.analysisReport) ? record.analysisReport : record
+  return extractReport(source)
+}
+
+function extractReport(source: unknown): NormalizedAnalysisReport | null {
+  const src = source as Record<string, unknown>
+  const suggestions = isRecord(src.detailedImprovementSuggestions)
+    ? (src.detailedImprovementSuggestions as Record<string, unknown>)
+    : {}
+  const skillsGaps = isRecord(src.skillsGaps) ? (src.skillsGaps as Record<string, unknown>) : {}
+  const criticalGaps = Array.isArray(skillsGaps.criticalGaps)
+    ? (skillsGaps.criticalGaps as Array<Record<string, unknown>>)
+    : []
+
   return {
-    score: getScore(source.score),
-    summary: getSummary(source.summary),
-    strengths: getStringList(source.strengths),
-    gaps: getStringList(source.gaps),
-    recommendations: getStringList(source.recommendations),
-    matchedKeywords: getStringList(source.matchedKeywords),
-    missingKeywords: getStringList(source.missingKeywords),
+    score: getScore(src.overallScore ?? src.score),
+    summary: getSummary(suggestions.summary ?? src.summary),
+    strengths: getStringList(src.strongMatchingPoints ?? src.strengths),
+    gaps: getStringList(
+      criticalGaps.length > 0
+        ? criticalGaps.map((gap) => String(gap.skill ?? ''))
+        : (src.gaps ?? []),
+    ),
+    recommendations: getStringList(suggestions.skills ?? src.recommendations),
+    matchedKeywords: getStringList(src.strongMatchingPoints ?? src.matchedKeywords),
+    missingKeywords: getStringList(
+      criticalGaps.length > 0
+        ? criticalGaps.map((gap) => String(gap.skill ?? ''))
+        : (src.missingKeywords ?? []),
+    ),
   }
 }
 

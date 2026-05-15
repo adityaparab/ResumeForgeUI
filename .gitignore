@@ -32,3 +32,5 @@ storybook-static
 coverage
 .yarn
 .vscode
+playwright-report
+.storybook

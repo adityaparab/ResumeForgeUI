@@ -205,6 +205,124 @@ describe('AnalysisResult', () => {
       expect(screen.getByText('0')).toBeInTheDocument()
     })
   })
+
+  it('handles API-schema shaped payload with skillsGaps.criticalGaps', async () => {
+    server.use(
+      http.get(`${API_URL}/analysis/:id`, () =>
+        HttpResponse.json({
+          ...mockAnalysis,
+          result: {
+            analysisReport: {
+              overallScore: '92',
+              justification: 'Great match',
+              strongMatchingPoints: ['React', 'TypeScript', 'Node.js'],
+              skillsGaps: {
+                criticalGaps: [
+                  {
+                    skill: 'GraphQL',
+                    detail: 'Missing GraphQL experience',
+                    requiredOrPreferred: 'Required' as const,
+                  },
+                ],
+                secondaryGaps: [],
+              },
+              detailedImprovementSuggestions: {
+                summary: 'Strong technical alignment.',
+                workExperience: ['Add senior-level examples'],
+                skills: ['Learn GraphQL', 'Improve AWS skills'],
+              },
+              impactfulProfessionalSummary: 'Experienced developer with 8+ years...',
+              updatedSkillsSection: {
+                languages: [],
+                frontendFrameworks: [],
+                backendFrameworks: [],
+                architectureAndDesign: [],
+                toolsAndTesting: [],
+                databases: [],
+              },
+              projectedScoreAfterChanges: '95',
+              nextSteps: ['Apply for senior roles'],
+            },
+            updatedResume: {},
+          },
+        }),
+      ),
+    )
+    render(<AnalysisResult />)
+    await waitFor(() => {
+      expect(screen.getByText('92')).toBeInTheDocument()
+    })
+    await waitFor(() => {
+      expect(screen.getByText('Match Score')).toBeInTheDocument()
+      expect(screen.getAllByText('GraphQL').length).toBeGreaterThanOrEqual(1)
+      expect(screen.getByText('Learn GraphQL')).toBeInTheDocument()
+    })
+  })
+
+  it('handles result as non-record value gracefully', async () => {
+    server.use(
+      http.get(`${API_URL}/analysis/:id`, () =>
+        HttpResponse.json({
+          ...mockAnalysis,
+          status: 'completed',
+          result: 'not-an-object',
+        }),
+      ),
+    )
+    render(<AnalysisResult />)
+    await waitFor(() => {
+      expect(screen.getByText(/completed analysis has no result data/i)).toBeInTheDocument()
+    })
+  })
+
+  it('handles critical gaps with empty skill values', async () => {
+    server.use(
+      http.get(`${API_URL}/analysis/:id`, () =>
+        HttpResponse.json({
+          ...mockAnalysis,
+          result: {
+            analysisReport: {
+              overallScore: '85',
+              justification: 'Good match',
+              strongMatchingPoints: ['React'],
+              skillsGaps: {
+                criticalGaps: [
+                  {
+                    skill: null,
+                    detail: 'Missing skill',
+                    requiredOrPreferred: 'Required' as const,
+                  },
+                ],
+                secondaryGaps: [],
+              },
+              detailedImprovementSuggestions: {
+                summary: 'Good alignment.',
+                workExperience: [],
+                skills: [],
+              },
+              impactfulProfessionalSummary: '',
+              updatedSkillsSection: {
+                languages: [],
+                frontendFrameworks: [],
+                backendFrameworks: [],
+                architectureAndDesign: [],
+                toolsAndTesting: [],
+                databases: [],
+              },
+              projectedScoreAfterChanges: '90',
+              nextSteps: [],
+            },
+            updatedResume: {},
+          },
+        }),
+      ),
+    )
+    render(<AnalysisResult />)
+    await waitFor(() => {
+      expect(screen.getByText('85')).toBeInTheDocument()
+      expect(screen.getByText(/Good alignment/)).toBeInTheDocument()
+    })
+  })
 })
 
 describe('ResumeDetail', () => {

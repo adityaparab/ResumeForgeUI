@@ -23,20 +23,52 @@ export const CreateAnalysisResponseSchema = z.object({
 
 export type CreateAnalysisResponse = z.infer<typeof CreateAnalysisResponseSchema>
 
-export const AnalysisReportSchema = z.object({
-  score: z.number().min(0).max(100),
-  summary: z.string(),
-  strengths: z.array(z.string()),
-  gaps: z.array(z.string()),
-  recommendations: z.array(z.string()),
-  matchedKeywords: z.array(z.string()),
-  missingKeywords: z.array(z.string()),
+export const SkillGapSchema = z.object({
+  skill: z.string(),
+  detail: z.string(),
+  requiredOrPreferred: z.enum(['Required', 'Preferred']),
 })
 
+export const SkillsGapsSchema = z.object({
+  criticalGaps: z.array(SkillGapSchema),
+  secondaryGaps: z.array(SkillGapSchema),
+})
+
+export const DetailedImprovementSuggestionsSchema = z.object({
+  summary: z.string(),
+  workExperience: z.array(z.string()),
+  skills: z.array(z.string()),
+})
+
+export const UpdatedSkillsSectionSchema = z.object({
+  languages: z.array(z.string()),
+  frontendFrameworks: z.array(z.string()),
+  backendFrameworks: z.array(z.string()),
+  architectureAndDesign: z.array(z.string()),
+  toolsAndTesting: z.array(z.string()),
+  databases: z.array(z.string()),
+})
+
+export const CandidateAssessmentSchema = z.object({
+  overallScore: z.string(),
+  justification: z.string(),
+  strongMatchingPoints: z.array(z.string()),
+  skillsGaps: SkillsGapsSchema,
+  detailedImprovementSuggestions: DetailedImprovementSuggestionsSchema,
+  impactfulProfessionalSummary: z.string(),
+  updatedSkillsSection: UpdatedSkillsSectionSchema,
+  projectedScoreAfterChanges: z.string(),
+  nextSteps: z.array(z.string()),
+})
+
+export type CandidateAssessment = z.infer<typeof CandidateAssessmentSchema>
+
 export const AnalysisResultSchema = z.object({
-  analysisReport: AnalysisReportSchema,
+  analysisReport: CandidateAssessmentSchema,
   updatedResume: StructuredContentSchema,
 })
+
+export type AnalysisResult = z.infer<typeof AnalysisResultSchema>
 
 export const AnalysisSchema = z.object({
   id: z.string(),
