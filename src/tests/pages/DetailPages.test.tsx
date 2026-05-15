@@ -567,7 +567,11 @@ describe('ResumeDetail', () => {
         HttpResponse.json({
           ...mockResume,
           structuredContent: {
-            basics: { name: 'John Doe', summary: 'Original summary' },
+            basics: {
+              name: 'John Doe',
+              summary: 'Original summary',
+              location: { city: 'Austin' },
+            },
             work: [{ name: 'ACME Corp', position: 'Engineer', highlights: ['Built tools'] }],
             skills: [{ name: 'TypeScript', keywords: ['React', 'Node'] }],
           },
@@ -577,17 +581,21 @@ describe('ResumeDetail', () => {
     render(<ResumeDetail />)
     const nameInput = await screen.findByDisplayValue('John Doe')
     const summaryInput = screen.getByLabelText('Summary')
+    const cityInput = screen.getByLabelText('City')
     const keywordsInput = screen.getByLabelText('Keywords')
     await user.clear(nameInput)
     await user.type(nameInput, 'Jane Doe')
     await user.clear(summaryInput)
     await user.type(summaryInput, 'Updated summary')
+    await user.clear(cityInput)
+    await user.type(cityInput, 'Denver')
     await user.clear(keywordsInput)
     await user.type(keywordsInput, 'React\nNode\nVitest')
     expect(screen.getByRole('button', { name: /save changes/i })).toBeEnabled()
     await user.click(screen.getByRole('button', { name: /reset/i }))
     expect(nameInput).toHaveValue('John Doe')
     expect(summaryInput).toHaveValue('Original summary')
+    expect(screen.getByLabelText('City')).toHaveValue('Austin')
     expect(screen.getByLabelText('Keywords')).toHaveValue('React\nNode')
   })
 

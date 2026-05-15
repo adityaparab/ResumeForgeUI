@@ -1,11 +1,8 @@
-import { RotateCcw, Save } from 'lucide-react'
+import RestartAltRoundedIcon from '@mui/icons-material/RestartAltRounded'
+import SaveRoundedIcon from '@mui/icons-material/SaveRounded'
+import { Box, Button, Paper, Stack, TextField, Typography } from '@mui/material'
 import { useId } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import type { StructuredContent } from '@/lib/schemas/resume.schema'
-import { cn } from '@/lib/utils'
 
 type PathSegment = string | number
 
@@ -106,16 +103,16 @@ function EditableField({
   const id = useId()
 
   return (
-    <div className="grid gap-1.5 text-sm">
-      <label htmlFor={id} className="font-medium text-muted-foreground">
-        {label}
-      </label>
-      {multiline ? (
-        <Textarea id={id} value={value} onChange={(event) => onChange(event.target.value)} />
-      ) : (
-        <Input id={id} value={value} onChange={(event) => onChange(event.target.value)} />
-      )}
-    </div>
+    <TextField
+      fullWidth
+      id={id}
+      label={label}
+      minRows={multiline ? 3 : undefined}
+      multiline={multiline}
+      onChange={(event) => onChange(event.target.value)}
+      size="small"
+      value={value}
+    />
   )
 }
 
@@ -158,14 +155,19 @@ function EditableValue({
 
     const records = value.filter(isRecord)
     return (
-      <div className="space-y-4">
+      <Stack spacing={2}>
         {records.map((item, index) => (
-          <div
+          <Box
             // biome-ignore lint/suspicious/noArrayIndexKey: structured resume arrays do not include stable IDs
             key={index}
-            className="rounded-lg border border-border/70 bg-background/60 p-4"
+            sx={{ border: 1, borderColor: 'divider', borderRadius: 1.5, p: { xs: 2, sm: 2.5 } }}
           >
-            <div className="grid gap-4 md:grid-cols-2">
+            <Typography color="text.secondary" sx={{ mb: 2 }} variant="caption">
+              {formatLabel(label)} {index + 1}
+            </Typography>
+            <Box
+              sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}
+            >
               {Object.entries(item).map(([childKey, childValue]) => (
                 <EditableValue
                   key={childKey}
@@ -176,15 +178,15 @@ function EditableValue({
                   onChange={onChange}
                 />
               ))}
-            </div>
-          </div>
+            </Box>
+          </Box>
         ))}
-      </div>
+      </Stack>
     )
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
       {Object.entries(value as Record<string, unknown>).map(([childKey, childValue]) => (
         <EditableValue
           key={childKey}
@@ -195,7 +197,7 @@ function EditableValue({
           onChange={onChange}
         />
       ))}
-    </div>
+    </Box>
   )
 }
 
@@ -210,43 +212,86 @@ export function EditableStructuredContent({
   const sections = Object.entries(content).filter(([, value]) => hasRenderableValue(value))
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onReset}
-          disabled={!isDirty || isSubmitting}
+    <Stack spacing={3}>
+      <Paper
+        elevation={0}
+        sx={{
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 2,
+          p: { xs: 2, sm: 2.5 },
+          position: { md: 'sticky' },
+          top: { md: 80 },
+          zIndex: 1,
+        }}
+      >
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={1.5}
+          sx={{ alignItems: { xs: 'stretch', sm: 'center' }, justifyContent: 'space-between' }}
         >
-          <RotateCcw className="size-4" />
-          Reset
-        </Button>
-        <Button type="button" onClick={onSubmit} disabled={!isDirty || isSubmitting}>
-          <Save className="size-4" />
-          Save changes
-        </Button>
-      </div>
+          <Typography color={isDirty ? 'warning.main' : 'text.secondary'} variant="body2">
+            {isDirty ? 'Unsaved changes' : 'No pending changes'}
+          </Typography>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25}>
+            <Button
+              disabled={!isDirty || isSubmitting}
+              onClick={onReset}
+              startIcon={<RestartAltRoundedIcon />}
+              type="button"
+              variant="outlined"
+            >
+              Reset
+            </Button>
+            <Button
+              aria-busy={isSubmitting}
+              disabled={!isDirty || isSubmitting}
+              onClick={onSubmit}
+              startIcon={<SaveRoundedIcon />}
+              type="button"
+              variant="contained"
+            >
+              {isSubmitting ? 'Saving changes...' : 'Save changes'}
+            </Button>
+          </Stack>
+        </Stack>
+      </Paper>
 
       {sections.length > 0 ? (
         sections.map(([sectionKey, sectionValue]) => (
-          <Card key={sectionKey} className="p-6">
-            <h2 className="mb-4 text-base font-semibold text-foreground">
+          <Paper
+            component="section"
+            elevation={0}
+            key={sectionKey}
+            sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: { xs: 2, sm: 3 } }}
+          >
+            <Typography component="h2" sx={{ mb: 2.5 }} variant="h6">
               {formatSectionTitle(sectionKey)}
-            </h2>
+            </Typography>
             <EditableValue
               content={content}
               label={sectionKey}
+              onChange={onChange}
               path={[sectionKey]}
               value={sectionValue}
-              onChange={onChange}
             />
-          </Card>
+          </Paper>
         ))
       ) : (
-        <Card className={cn('px-4 py-8 text-center text-muted-foreground')}>
-          No structured fields available.
-        </Card>
+        <Paper
+          elevation={0}
+          sx={{
+            border: 1,
+            borderColor: 'divider',
+            borderRadius: 2,
+            px: 2,
+            py: 6,
+            textAlign: 'center',
+          }}
+        >
+          <Typography color="text.secondary">No structured fields available.</Typography>
+        </Paper>
       )}
-    </div>
+    </Stack>
   )
 }
