@@ -1,5 +1,7 @@
+import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
+import { Alert, Paper, Stack } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { toast } from '@/components/common/toast'
@@ -17,7 +19,10 @@ export default function AnalysisStream() {
     isError: isStatusError,
   } = useQuery({
     queryKey: ['analysis-status', analysisId],
-    queryFn: () => analysisApi.getStatus(analysisId!),
+    queryFn: () => {
+      if (!analysisId) throw new Error('Missing analysis ID')
+      return analysisApi.getStatus(analysisId)
+    },
     enabled: !!analysisId,
   })
 
@@ -36,35 +41,61 @@ export default function AnalysisStream() {
     }
   }, [navigate, analysisId])
 
-  if (!analysisId) {
-    toast.error('Invalid analysis ID.')
-    return (
-      <div role="alert" className="text-destructive">
-        Invalid analysis ID.
-      </div>
-    )
-  }
+  useEffect(() => {
+    if (!analysisId) {
+      toast.error('Invalid analysis ID.')
+    }
+  }, [analysisId])
 
-  if (isStatusError) {
-    toast.error('Failed to load analysis status.')
+  useEffect(() => {
+    if (isStatusError) {
+      toast.error('Failed to load analysis status.')
+    }
+  }, [isStatusError])
+
+  if (!analysisId) {
+    return (
+      <Paper elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 3 }}>
+        <Alert severity="error" role="alert">
+          Invalid analysis ID.
+        </Alert>
+      </Paper>
+    )
   }
 
   if (isStatusLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <LoadingSpinner />
-      </div>
+      <Paper
+        elevation={0}
+        sx={{
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 2,
+          display: 'grid',
+          minHeight: 256,
+          placeItems: 'center',
+        }}
+      >
+        <LoadingSpinner label="Loading analysis status" />
+      </Paper>
     )
   }
 
   return (
-    <StreamViewer
-      title="Analysis in Progress"
-      subtitle={`Analysis ID: ${analysisId}`}
-      status={statusData?.jobId ? status : 'idle'}
-      fullText={fullText}
-      error={error}
-      onDone={handleDone}
-    />
+    <Stack spacing={3}>
+      {isStatusError && (
+        <Alert icon={<WarningAmberRoundedIcon />} severity="warning" role="alert">
+          Failed to load analysis status. Waiting for live job details.
+        </Alert>
+      )}
+      <StreamViewer
+        title="Analysis in Progress"
+        subtitle={`Analysis ID: ${analysisId}`}
+        status={statusData?.jobId ? status : 'idle'}
+        fullText={fullText}
+        error={error}
+        onDone={handleDone}
+      />
+    </Stack>
   )
 }

@@ -1,6 +1,21 @@
-import { Loader2 } from 'lucide-react'
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
+import ErrorRoundedIcon from '@mui/icons-material/ErrorRounded'
+import HourglassEmptyRoundedIcon from '@mui/icons-material/HourglassEmptyRounded'
+import RadioButtonUncheckedRoundedIcon from '@mui/icons-material/RadioButtonUncheckedRounded'
+import SyncRoundedIcon from '@mui/icons-material/SyncRounded'
+import {
+  Alert,
+  Box,
+  Chip,
+  CircularProgress,
+  LinearProgress,
+  Paper,
+  Stack,
+  Typography,
+} from '@mui/material'
+import type { AlertColor } from '@mui/material/Alert'
+import type { ChipProps } from '@mui/material/Chip'
 import { useEffect, useRef } from 'react'
-import { cn } from '@/lib/utils'
 import type { StreamStatus } from '../hooks/useStreamJob'
 
 interface StreamViewerProps {
@@ -10,7 +25,6 @@ interface StreamViewerProps {
   fullText: string
   error: string | null
   onDone?: () => void
-  className?: string
 }
 
 const STATUS_LABELS: Record<StreamStatus, string> = {
@@ -21,12 +35,55 @@ const STATUS_LABELS: Record<StreamStatus, string> = {
   failed: 'Failed',
 }
 
-const STATUS_DOT_CLASSES: Record<StreamStatus, string> = {
-  idle: 'bg-muted-foreground',
-  connecting: 'bg-yellow-500 animate-pulse',
-  streaming: 'bg-blue-500 animate-pulse',
-  done: 'bg-green-500',
-  failed: 'bg-destructive',
+const STATUS_CONFIG: Record<
+  StreamStatus,
+  {
+    chipColor: ChipProps['color']
+    alertSeverity: AlertColor
+    description: string
+    icon: React.ReactElement
+    variant: ChipProps['variant']
+  }
+> = {
+  idle: {
+    chipColor: 'default',
+    alertSeverity: 'info',
+    description: 'Waiting for the job stream to become available.',
+    icon: <RadioButtonUncheckedRoundedIcon />,
+    variant: 'outlined',
+  },
+  connecting: {
+    chipColor: 'warning',
+    alertSeverity: 'warning',
+    description: 'Connecting to the live job stream.',
+    icon: <HourglassEmptyRoundedIcon />,
+    variant: 'filled',
+  },
+  streaming: {
+    chipColor: 'info',
+    alertSeverity: 'info',
+    description: 'Receiving live job output.',
+    icon: <SyncRoundedIcon />,
+    variant: 'filled',
+  },
+  done: {
+    chipColor: 'success',
+    alertSeverity: 'success',
+    description: 'The job has completed successfully.',
+    icon: <CheckCircleRoundedIcon />,
+    variant: 'filled',
+  },
+  failed: {
+    chipColor: 'error',
+    alertSeverity: 'error',
+    description: 'The job failed before it could complete.',
+    icon: <ErrorRoundedIcon />,
+    variant: 'filled',
+  },
+}
+
+function isActiveStatus(status: StreamStatus) {
+  return status === 'connecting' || status === 'streaming'
 }
 
 export function StreamViewer({
@@ -36,19 +93,19 @@ export function StreamViewer({
   fullText,
   error,
   onDone,
-  className,
 }: StreamViewerProps) {
   const outputRef = useRef<HTMLDivElement>(null)
+  const statusConfig = STATUS_CONFIG[status]
 
-  // Auto-scroll as text comes in
   useEffect(() => {
     if (status === 'streaming' && fullText.length > 0) {
-      const output = outputRef.current as HTMLDivElement
-      output.scrollTop = output.scrollHeight
+      const output = outputRef.current
+      if (output) {
+        output.scrollTop = output.scrollHeight
+      }
     }
   }, [status, fullText])
 
-  // Trigger onDone callback
   useEffect(() => {
     if (status === 'done') {
       onDone?.()
@@ -56,51 +113,95 @@ export function StreamViewer({
   }, [status, onDone])
 
   return (
-    <div className={cn('space-y-6', className)}>
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-          {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
-        </div>
-        <div className="flex shrink-0 items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm">
-          <span
-            className={cn('size-2 rounded-full', STATUS_DOT_CLASSES[status])}
-            aria-hidden="true"
-          />
-          <span className="font-medium">{STATUS_LABELS[status]}</span>
-          {(status === 'connecting' || status === 'streaming') && (
-            <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
+    <Stack spacing={3}>
+      <Paper
+        elevation={0}
+        sx={{ border: 1, borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}
+      >
+        <Stack spacing={2.5} sx={{ p: { xs: 2, sm: 3 } }}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            sx={{ alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between' }}
+          >
+            <Box>
+              <Typography component="h1" variant="h4">
+                {title}
+              </Typography>
+              {subtitle && (
+                <Typography color="text.secondary" sx={{ mt: 0.75 }}>
+                  {subtitle}
+                </Typography>
+              )}
+            </Box>
+            <Chip
+              color={statusConfig.chipColor}
+              icon={statusConfig.icon}
+              label={STATUS_LABELS[status]}
+              variant={statusConfig.variant}
+              sx={{ alignSelf: { xs: 'flex-start', sm: 'center' }, fontWeight: 700 }}
+            />
+          </Stack>
+
+          {isActiveStatus(status) && (
+            <LinearProgress aria-label={`${STATUS_LABELS[status]} progress`} color="primary" />
           )}
-        </div>
-      </div>
 
-      {/* Error state */}
-      {status === 'failed' && error && (
-        <div
-          className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
-          role="alert"
-        >
-          {error}
-        </div>
-      )}
+          {status === 'failed' ? (
+            <Alert severity="error" role="alert">
+              {error ?? statusConfig.description}
+            </Alert>
+          ) : (
+            <Alert severity={statusConfig.alertSeverity} role="status">
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                {isActiveStatus(status) && <CircularProgress color="inherit" size={16} />}
+                <span>{statusConfig.description}</span>
+              </Stack>
+            </Alert>
+          )}
+        </Stack>
+      </Paper>
 
-      {/* Stream output */}
-      <div
+      <Paper
         ref={outputRef}
-        className="relative max-h-[calc(100vh-18rem)] min-h-48 overflow-y-auto rounded-xl border border-border bg-card p-6 font-mono text-sm leading-relaxed"
+        elevation={0}
         aria-label="Stream output"
         aria-live="polite"
         role="log"
+        sx={{
+          bgcolor: 'background.paper',
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 2,
+          fontFamily:
+            'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+          fontSize: '0.875rem',
+          lineHeight: 1.7,
+          maxHeight: 'calc(100vh - 18rem)',
+          minHeight: 192,
+          overflowY: 'auto',
+          p: { xs: 2, sm: 3 },
+        }}
       >
         {fullText ? (
-          <pre className="whitespace-pre-wrap break-words text-foreground">{fullText}</pre>
+          <Box
+            component="pre"
+            sx={{
+              color: 'text.primary',
+              fontFamily: 'inherit',
+              m: 0,
+              overflowWrap: 'anywhere',
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            {fullText}
+          </Box>
         ) : (
-          <p className="text-muted-foreground">
+          <Typography color="text.secondary" sx={{ fontFamily: 'inherit' }}>
             {status === 'failed' ? 'No output.' : 'Waiting for output…'}
-          </p>
+          </Typography>
         )}
-      </div>
-    </div>
+      </Paper>
+    </Stack>
   )
 }

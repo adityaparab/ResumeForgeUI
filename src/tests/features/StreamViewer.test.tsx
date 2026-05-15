@@ -52,6 +52,18 @@ describe('StreamViewer', () => {
     expect(screen.getByLabelText('Stream output')).toBeInTheDocument()
   })
 
+  it('keeps stream output exposed as a polite live log', () => {
+    render(<StreamViewer {...defaultProps} fullText="Hello world output" />)
+    const output = screen.getByRole('log', { name: /stream output/i })
+    expect(output).toHaveAttribute('aria-live', 'polite')
+  })
+
+  it('shows progress and status text while connecting', () => {
+    render(<StreamViewer {...defaultProps} status="connecting" />)
+    expect(screen.getByRole('progressbar', { name: /connecting.*progress/i })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(/connecting to the live job stream/i)
+  })
+
   it('shows waiting message when no text and not failed', () => {
     render(<StreamViewer {...defaultProps} status="connecting" fullText="" />)
     expect(screen.getByText(/waiting for output/i)).toBeInTheDocument()

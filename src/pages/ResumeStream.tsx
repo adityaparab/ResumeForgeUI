@@ -1,5 +1,7 @@
+import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
+import { Alert, Paper, Stack } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { toast } from '@/components/common/toast'
@@ -17,7 +19,10 @@ export default function ResumeStream() {
     isError: isStatusError,
   } = useQuery({
     queryKey: ['resume-status', resumeId],
-    queryFn: () => resumeApi.getStatus(resumeId!),
+    queryFn: () => {
+      if (!resumeId) throw new Error('Missing resume ID')
+      return resumeApi.getStatus(resumeId)
+    },
     enabled: !!resumeId,
   })
 
@@ -36,37 +41,63 @@ export default function ResumeStream() {
     }
   }, [navigate, resumeId])
 
-  if (!resumeId) {
-    toast.error('Invalid resume ID.')
-    return (
-      <div role="alert" className="text-destructive">
-        Invalid resume ID.
-      </div>
-    )
-  }
+  useEffect(() => {
+    if (!resumeId) {
+      toast.error('Invalid resume ID.')
+    }
+  }, [resumeId])
 
-  if (isStatusError) {
-    toast.error('Failed to load resume status.')
+  useEffect(() => {
+    if (isStatusError) {
+      toast.error('Failed to load resume status.')
+    }
+  }, [isStatusError])
+
+  if (!resumeId) {
+    return (
+      <Paper elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 3 }}>
+        <Alert severity="error" role="alert">
+          Invalid resume ID.
+        </Alert>
+      </Paper>
+    )
   }
 
   if (isStatusLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <LoadingSpinner />
-      </div>
+      <Paper
+        elevation={0}
+        sx={{
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 2,
+          display: 'grid',
+          minHeight: 256,
+          placeItems: 'center',
+        }}
+      >
+        <LoadingSpinner label="Loading resume status" />
+      </Paper>
     )
   }
 
   return (
-    <StreamViewer
-      title="Resume Processing"
-      subtitle={
-        statusData?.originalName ? `File: ${statusData.originalName}` : `Resume ID: ${resumeId}`
-      }
-      status={statusData?.jobId ? status : 'idle'}
-      fullText={fullText}
-      error={error}
-      onDone={handleDone}
-    />
+    <Stack spacing={3}>
+      {isStatusError && (
+        <Alert icon={<WarningAmberRoundedIcon />} severity="warning" role="alert">
+          Failed to load resume status. Waiting for live job details.
+        </Alert>
+      )}
+      <StreamViewer
+        title="Resume Processing"
+        subtitle={
+          statusData?.originalName ? `File: ${statusData.originalName}` : `Resume ID: ${resumeId}`
+        }
+        status={statusData?.jobId ? status : 'idle'}
+        fullText={fullText}
+        error={error}
+        onDone={handleDone}
+      />
+    </Stack>
   )
 }
