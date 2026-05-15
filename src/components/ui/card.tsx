@@ -1,57 +1,66 @@
-import * as React from 'react'
-import { cn } from '@/lib/utils'
+import { Box, type BoxProps, Paper, type PaperProps } from '@mui/material'
+import type { SxProps, Theme } from '@mui/material/styles'
+import { forwardRef } from 'react'
 
-const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(
-        'rounded-xl border border-border bg-card text-card-foreground shadow',
-        className,
-      )}
-      {...props}
-    />
-  ),
-)
+function sxArray(sx: SxProps<Theme> | undefined) {
+  if (!sx) return []
+  return Array.isArray(sx) ? sx : [sx]
+}
+
+const Card = forwardRef<HTMLDivElement, PaperProps>(({ sx, ...props }, ref) => (
+  <Paper
+    ref={ref}
+    elevation={0}
+    sx={[
+      {
+        bgcolor: 'background.paper',
+        border: 1,
+        borderColor: 'divider',
+        borderRadius: 2,
+        color: 'text.primary',
+      },
+      ...sxArray(sx),
+    ]}
+    {...props}
+  />
+))
 Card.displayName = 'Card'
 
-const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex flex-col space-y-1.5 p-6', className)} {...props} />
-  ),
-)
+const CardHeader = forwardRef<HTMLDivElement, BoxProps>(({ sx, ...props }, ref) => (
+  <Box
+    ref={ref}
+    sx={[{ display: 'flex', flexDirection: 'column', gap: 0.75, p: 3 }, ...sxArray(sx)]}
+    {...props}
+  />
+))
 CardHeader.displayName = 'CardHeader'
 
-const CardTitle = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('font-semibold leading-none tracking-tight', className)}
-      {...props}
-    />
-  ),
-)
+const CardTitle = forwardRef<HTMLDivElement, BoxProps>(({ sx, ...props }, ref) => (
+  <Box ref={ref} sx={[{ fontWeight: 700, lineHeight: 1.25 }, ...sxArray(sx)]} {...props} />
+))
 CardTitle.displayName = 'CardTitle'
 
-const CardDescription = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props} />
-  ),
-)
+const CardDescription = forwardRef<HTMLDivElement, BoxProps>(({ sx, ...props }, ref) => (
+  <Box
+    ref={ref}
+    sx={[{ color: 'text.secondary', fontSize: '0.875rem' }, ...sxArray(sx)]}
+    {...props}
+  />
+))
 CardDescription.displayName = 'CardDescription'
 
-const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
-  ),
-)
+const CardContent = forwardRef<HTMLDivElement, BoxProps>(({ sx, ...props }, ref) => (
+  <Box ref={ref} sx={[{ p: 3, pt: 0 }, ...sxArray(sx)]} {...props} />
+))
 CardContent.displayName = 'CardContent'
 
-const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex items-center p-6 pt-0', className)} {...props} />
-  ),
-)
+const CardFooter = forwardRef<HTMLDivElement, BoxProps>(({ sx, ...props }, ref) => (
+  <Box
+    ref={ref}
+    sx={[{ alignItems: 'center', display: 'flex', p: 3, pt: 0 }, ...sxArray(sx)]}
+    {...props}
+  />
+))
 CardFooter.displayName = 'CardFooter'
 
 export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }

@@ -1,35 +1,49 @@
-import { cva, type VariantProps } from 'class-variance-authority'
-import type * as React from 'react'
-import { cn } from '@/lib/utils'
+import { Chip, type ChipProps } from '@mui/material'
+import { alpha, type SxProps, type Theme } from '@mui/material/styles'
+import type { ReactNode } from 'react'
 
-const badgeVariants = cva(
-  'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-  {
-    variants: {
-      variant: {
-        default: 'border-transparent bg-primary/10 text-primary',
-        secondary: 'border-transparent bg-secondary text-secondary-foreground',
-        outline: 'border-border text-foreground',
-        success:
-          'border-transparent bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300',
-        warning:
-          'border-transparent bg-yellow-100 text-yellow-800 dark:bg-yellow-500/15 dark:text-yellow-200',
-        destructive:
-          'border-transparent bg-red-100 text-red-800 dark:bg-destructive/20 dark:text-destructive',
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-    },
-  },
-)
+type BadgeVariant = 'default' | 'secondary' | 'outline' | 'success' | 'warning' | 'destructive'
 
-export interface BadgeProps
-  extends React.HTMLAttributes<HTMLSpanElement>,
-    VariantProps<typeof badgeVariants> {}
-
-function Badge({ className, variant, ...props }: BadgeProps) {
-  return <span className={cn(badgeVariants({ variant }), className)} {...props} />
+export type BadgeProps = Omit<ChipProps, 'children' | 'color' | 'label' | 'size' | 'variant'> & {
+  children?: ReactNode
+  variant?: BadgeVariant
 }
 
-export { Badge, badgeVariants }
+function sxArray(sx: SxProps<Theme> | undefined) {
+  if (!sx) return []
+  return Array.isArray(sx) ? sx : [sx]
+}
+
+function getBadgeProps(variant: BadgeVariant): Pick<ChipProps, 'color' | 'variant'> {
+  if (variant === 'secondary') return { color: 'secondary', variant: 'filled' }
+  if (variant === 'success') return { color: 'success', variant: 'filled' }
+  if (variant === 'warning') return { color: 'warning', variant: 'filled' }
+  if (variant === 'destructive') return { color: 'error', variant: 'filled' }
+  if (variant === 'outline') return { color: 'default', variant: 'outlined' }
+  return { color: 'primary', variant: 'outlined' }
+}
+
+function getBadgeSx(variant: BadgeVariant): SxProps<Theme> {
+  if (variant === 'default') {
+    return (theme) => ({
+      bgcolor: alpha(theme.palette.primary.main, 0.08),
+      borderColor: alpha(theme.palette.primary.main, 0.28),
+    })
+  }
+  return {}
+}
+
+function Badge({ children, sx, variant = 'default', ...props }: BadgeProps) {
+  return (
+    <Chip
+      component="span"
+      label={children}
+      size="small"
+      sx={[{ borderRadius: 999, fontWeight: 700 }, getBadgeSx(variant), ...sxArray(sx)]}
+      {...getBadgeProps(variant)}
+      {...props}
+    />
+  )
+}
+
+export { Badge }

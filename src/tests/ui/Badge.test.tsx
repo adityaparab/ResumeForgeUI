@@ -11,7 +11,7 @@ describe('Badge', () => {
 
   it('applies custom className', () => {
     render(<Badge className="custom-class">tag</Badge>)
-    expect(screen.getByText('tag')).toHaveClass('custom-class')
+    expect(screen.getByText('tag').closest('.custom-class')).toBeInTheDocument()
   })
 
   it.each([

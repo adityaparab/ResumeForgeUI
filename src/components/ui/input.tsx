@@ -1,23 +1,41 @@
+import { alpha, styled } from '@mui/material/styles'
 import * as React from 'react'
-import { cn } from '@/lib/utils'
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, ...props }, ref) => {
-    return (
-      <input
-        type={type}
-        className={cn(
-          'flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive',
-          className,
-        )}
-        ref={ref}
-        {...props}
-      />
-    )
+const StyledInput = styled('input')(({ theme }) => ({
+  backgroundColor: 'transparent',
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: theme.shape.borderRadius,
+  boxShadow: theme.shadows[1],
+  color: theme.palette.text.primary,
+  font: 'inherit',
+  fontSize: theme.typography.body2.fontSize,
+  height: 36,
+  padding: '4px 12px',
+  transition: theme.transitions.create(['border-color', 'box-shadow'], { duration: 120 }),
+  width: '100%',
+  '&::placeholder': {
+    color: theme.palette.text.secondary,
+    opacity: 1,
   },
-)
+  '&:focus-visible': {
+    borderColor: theme.palette.primary.main,
+    boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.16)}`,
+    outline: 'none',
+  },
+  '&:disabled': {
+    cursor: 'not-allowed',
+    opacity: 0.5,
+  },
+  '&[aria-invalid="true"]': {
+    borderColor: theme.palette.error.main,
+  },
+}))
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(({ type, ...props }, ref) => (
+  <StyledInput ref={ref} type={type} {...props} />
+))
 Input.displayName = 'Input'
 
 export { Input }
