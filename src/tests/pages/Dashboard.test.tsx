@@ -15,8 +15,7 @@ describe('Dashboard', () => {
 
   it('shows skeletons while loading', () => {
     render(<Dashboard />, { initialEntries: ['/'] })
-    const card = document.querySelector('.animate-pulse')
-    expect(card).toBeInTheDocument()
+    expect(screen.getAllByLabelText(/loading dashboard metric/i)).toHaveLength(3)
   })
 
   it('shows stats cards after data loads', async () => {
@@ -38,6 +37,8 @@ describe('Dashboard', () => {
     expect(screen.getByText('3')).toBeInTheDocument()
     expect(screen.getByText('Total Analyses')).toBeInTheDocument()
     expect(screen.getByText('7')).toBeInTheDocument()
+    expect(screen.getByText('Workspace Activity')).toBeInTheDocument()
+    expect(screen.getByText('10')).toBeInTheDocument()
   })
 
   it('shows error alert on failure', async () => {
@@ -79,6 +80,29 @@ describe('Dashboard', () => {
       expect(screen.getAllByText('Upload Resume').length).toBeGreaterThanOrEqual(1)
       expect(screen.getAllByText('Analyze Resume').length).toBeGreaterThanOrEqual(1)
     })
+  })
+
+  it('shows derived workflow status', async () => {
+    server.use(
+      http.get(`${API_URL}/resume`, () =>
+        HttpResponse.json({ data: [], total: 4, page: 1, limit: 1 }),
+      ),
+      http.get(`${API_URL}/analysis`, () =>
+        HttpResponse.json({ data: [], total: 2, page: 1, limit: 1 }),
+      ),
+    )
+
+    render(<Dashboard />, { initialEntries: ['/'] })
+
+    await waitFor(() => {
+      expect(screen.getByRole('region', { name: /workflow status/i })).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('50%')).toBeInTheDocument()
+    })
+
+    expect(screen.getByLabelText(/analysis coverage/i)).toHaveAttribute('aria-valuenow', '50')
   })
 
   it('does not render embedded upload or analysis workflow sections', async () => {

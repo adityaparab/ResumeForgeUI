@@ -1,12 +1,29 @@
+import { Paper, Skeleton, Stack } from '@mui/material'
+
 export function StatsCardSkeleton() {
   return (
-    <div className="rounded-xl border border-border bg-card p-6 shadow-sm animate-pulse">
-      <div className="flex items-center justify-between">
-        <div className="h-4 w-24 rounded bg-muted" />
-        <div className="h-5 w-5 rounded bg-muted" />
-      </div>
-      <div className="mt-2 h-9 w-16 rounded bg-muted" />
-      <div className="mt-1 h-3 w-32 rounded bg-muted" />
-    </div>
+    <Paper
+      aria-label="Loading dashboard metric"
+      elevation={0}
+      sx={{
+        border: 1,
+        borderColor: 'divider',
+        borderRadius: 2,
+        p: 3,
+      }}
+    >
+      <Stack spacing={2}>
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{ alignItems: 'center', justifyContent: 'space-between' }}
+        >
+          <Skeleton animation="wave" height={22} width="46%" />
+          <Skeleton animation="wave" height={40} variant="rounded" width={40} />
+        </Stack>
+        <Skeleton animation="wave" height={48} width="32%" />
+        <Skeleton animation="wave" height={18} width="62%" />
+      </Stack>
+    </Paper>
   )
 }
