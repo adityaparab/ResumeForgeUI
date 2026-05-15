@@ -1,3 +1,4 @@
+import { Box, Skeleton, Table, Text } from '@chakra-ui/react'
 import {
   type ColumnDef,
   flexRender,
@@ -8,20 +9,18 @@ import {
 } from '@tanstack/react-table'
 import { ChevronDown, ChevronsUpDown, ChevronUp } from 'lucide-react'
 import { useState } from 'react'
-import { cn } from '@/lib/utils'
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData, unknown>[]
   data: TData[]
   isLoading?: boolean
   emptyMessage?: string
-  className?: string
 }
 
 function SortIcon({ sorted }: { sorted: false | 'asc' | 'desc' }) {
-  if (sorted === 'asc') return <ChevronUp className="ml-1 size-4" />
-  if (sorted === 'desc') return <ChevronDown className="ml-1 size-4" />
-  return <ChevronsUpDown className="ml-1 size-4 opacity-50" />
+  if (sorted === 'asc') return <ChevronUp size={14} />
+  if (sorted === 'desc') return <ChevronDown size={14} />
+  return <ChevronsUpDown size={14} opacity={0.5} />
 }
 
 export function DataTable<TData>({
@@ -29,7 +28,6 @@ export function DataTable<TData>({
   data,
   isLoading = false,
   emptyMessage = 'No results found.',
-  className,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([])
 
@@ -43,70 +41,80 @@ export function DataTable<TData>({
   })
 
   return (
-    <div className={cn('w-full overflow-auto rounded-xl border border-border', className)}>
-      <table className="w-full text-sm">
-        <thead className="border-b border-border bg-muted/50">
+    <Box w="full" overflowX="auto" borderRadius="xl" borderWidth="1px" borderColor="border.subtle">
+      <Table.Root size="sm">
+        <Table.Header>
           {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
+            <Table.Row key={headerGroup.id} bg="bg.subtle">
               {headerGroup.headers.map((header) => (
-                <th
+                <Table.ColumnHeader
                   key={header.id}
-                  className="px-4 py-3 text-left font-medium text-muted-foreground"
+                  px={4}
+                  py={3}
+                  textAlign="left"
+                  fontSize="xs"
+                  fontWeight="600"
+                  color="fg.muted"
+                  textTransform="uppercase"
+                  letterSpacing="wide"
                   style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
                 >
                   {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                    <button
+                    <Box
+                      as="button"
                       type="button"
-                      className="flex items-center hover:text-foreground transition-colors"
+                      display="inline-flex"
+                      alignItems="center"
+                      gap={1}
+                      cursor="pointer"
+                      _hover={{ color: 'fg' }}
+                      transition="color 0.15s"
                       onClick={header.column.getToggleSortingHandler()}
                       aria-label={`Sort by ${typeof header.column.columnDef.header === 'string' ? header.column.columnDef.header : header.id}`}
                     >
                       {flexRender(header.column.columnDef.header, header.getContext())}
                       <SortIcon sorted={header.column.getIsSorted()} />
-                    </button>
+                    </Box>
                   ) : (
                     flexRender(header.column.columnDef.header, header.getContext())
                   )}
-                </th>
+                </Table.ColumnHeader>
               ))}
-            </tr>
+            </Table.Row>
           ))}
-        </thead>
-        <tbody>
+        </Table.Header>
+        <Table.Body>
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: skeleton rows have stable order
-              <tr key={i} className="border-b border-border">
+              <Table.Row key={i}>
                 {columns.map((_, j) => (
                   // biome-ignore lint/suspicious/noArrayIndexKey: skeleton columns have stable order
-                  <td key={j} className="px-4 py-3">
-                    <div className="h-4 w-full animate-pulse rounded bg-muted" />
-                  </td>
+                  <Table.Cell key={j} px={4} py={3}>
+                    <Skeleton h={4} w="full" borderRadius="sm" />
+                  </Table.Cell>
                 ))}
-              </tr>
+              </Table.Row>
             ))
           ) : table.getRowModel().rows.length === 0 ? (
-            <tr>
-              <td colSpan={columns.length} className="px-4 py-8 text-center text-muted-foreground">
-                {emptyMessage}
-              </td>
-            </tr>
+            <Table.Row>
+              <Table.Cell colSpan={columns.length} px={4} py={8} textAlign="center">
+                <Text color="fg.muted">{emptyMessage}</Text>
+              </Table.Cell>
+            </Table.Row>
           ) : (
             table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
-              >
+              <Table.Row key={row.id} _hover={{ bg: 'bg.subtle' }} transition="background 0.15s">
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-3">
+                  <Table.Cell key={cell.id} px={4} py={3}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
+                  </Table.Cell>
                 ))}
-              </tr>
+              </Table.Row>
             ))
           )}
-        </tbody>
-      </table>
-    </div>
+        </Table.Body>
+      </Table.Root>
+    </Box>
   )
 }
