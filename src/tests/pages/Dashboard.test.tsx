@@ -81,6 +81,17 @@ describe('Dashboard', () => {
     })
   })
 
+  it('does not render embedded upload or analysis workflow sections', async () => {
+    render(<Dashboard />, { initialEntries: ['/'] })
+
+    await waitFor(() => {
+      expect(screen.getByRole('region', { name: /quick actions/i })).toBeInTheDocument()
+    })
+
+    expect(screen.queryByRole('region', { name: /upload a new resume/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: /start a new analysis/i })).not.toBeInTheDocument()
+  })
+
   it('retry button is clickable', async () => {
     const user = userEvent.setup()
 

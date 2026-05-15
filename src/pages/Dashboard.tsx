@@ -1,11 +1,9 @@
 import { BarChart3, FileText, Plus, RefreshCw } from 'lucide-react'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
-import { AnalyzeForm } from '@/features/analysis/components/AnalyzeForm'
 import { StatsCard } from '@/features/dashboard/components/StatsCard'
 import { StatsCardSkeleton } from '@/features/dashboard/components/StatsCardSkeleton'
 import { useDashboardStats } from '@/features/dashboard/hooks/useDashboardStats'
-import { ResumeUploadForm } from '@/features/resume/components/ResumeUploadForm'
 
 export default function Dashboard() {
   const { totalResumes, totalAnalyses, isLoading, isError, refetch } = useDashboardStats()
@@ -100,22 +98,6 @@ export default function Dashboard() {
           </Link>
         </div>
       </section>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section aria-label="Upload a new resume">
-          <h2 className="mb-4 text-lg font-semibold text-foreground">Upload Resume</h2>
-          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-            <ResumeUploadForm />
-          </div>
-        </section>
-
-        <section aria-label="Start a new analysis">
-          <h2 className="mb-4 text-lg font-semibold text-foreground">Analyze Resume</h2>
-          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-            <AnalyzeForm />
-          </div>
-        </section>
-      </div>
     </div>
   )
 }

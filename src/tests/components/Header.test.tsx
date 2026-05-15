@@ -1,8 +1,10 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { store } from '@/app/store'
+import ThemeProvider from '@/components/common/ThemeProvider'
 import Header from '@/components/layout/Header'
+import { THEME_KEY } from '@/constants'
 import { logout, setCredentials } from '@/stores/authSlice'
 import { setTheme } from '@/stores/uiSlice'
 import { render } from '@/tests/test-utils'
@@ -10,6 +12,12 @@ import { render } from '@/tests/test-utils'
 const mockUser = { id: 'user-1', email: 'user@example.com' }
 
 describe('Header', () => {
+  afterEach(() => {
+    document.documentElement.classList.remove('dark')
+    store.dispatch(setTheme('system'))
+    localStorage.removeItem(THEME_KEY)
+  })
+
   it('renders ResumeForge brand name', () => {
     render(<Header />)
     expect(screen.getByText('ResumeForge')).toBeInTheDocument()
@@ -63,11 +71,20 @@ describe('Header', () => {
     const user = userEvent.setup()
     // Start from light mode → toggles to dark
     store.dispatch(setTheme('light'))
-    render(<Header />)
+    render(
+      <>
+        <Header />
+        <ThemeProvider />
+      </>,
+    )
     expect(screen.getByRole('button', { name: /switch to dark mode/i })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /switch to dark mode/i }))
+    expect(document.documentElement).toHaveClass('dark')
+    expect(localStorage.getItem(THEME_KEY)).toBe('dark')
     // Now in dark mode → toggles to light
     await user.click(screen.getByRole('button', { name: /switch to light mode/i }))
     expect(screen.getByRole('button', { name: /switch to dark mode/i })).toBeInTheDocument()
+    expect(document.documentElement).not.toHaveClass('dark')
+    expect(localStorage.getItem(THEME_KEY)).toBe('light')
   })
 })
