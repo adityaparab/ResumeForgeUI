@@ -1,10 +1,13 @@
 name: Deploy
 
+# Disabled during the Material UI migration. Re-enable automatic runs by restoring
+# the push and pull_request triggers below.
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
+#  push:
+#    branches: [main]
+#  pull_request:
+#    branches: [main]
 
 jobs:
   deploy-preview:

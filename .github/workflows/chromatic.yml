@@ -1,10 +1,13 @@
 name: Chromatic
 
+# Disabled during the Material UI migration. Re-enable automatic runs by restoring
+# the push and pull_request triggers below.
 on:
-  push:
-    branches: [main]
-  pull_request:
-    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+#  push:
+#    branches: [main]
+#  pull_request:
+#    types: [opened, synchronize, reopened]
 
 jobs:
   chromatic:
