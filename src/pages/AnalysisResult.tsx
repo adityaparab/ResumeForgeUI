@@ -11,8 +11,9 @@ import {
   VStack,
 } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
-import { BarChart3, CheckCircle2, ChevronLeft, XCircle, Zap } from 'lucide-react'
+import { BarChart3, CheckCircle2, ChevronLeft, Download, XCircle, Zap } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router'
+import { toast } from 'sonner'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { analysisApi } from '@/lib/api-client'
 
@@ -186,6 +187,21 @@ export default function AnalysisResult() {
   const statusColor =
     analysis.status === 'completed' ? 'green' : analysis.status === 'failed' ? 'red' : 'yellow'
 
+  const handleDownload = async () => {
+    try {
+      const blob = await analysisApi.download(analysisId as string)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      /* v8 ignore next */
+      a.download = `analysis-${analysisId}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      toast.error('Could not download updated resume.')
+    }
+  }
+
   return (
     <VStack gap={6} align="stretch">
       <Box>
@@ -207,6 +223,12 @@ export default function AnalysisResult() {
         <Badge colorPalette={statusColor} variant="subtle">
           {analysis.status}
         </Badge>
+        {analysis.status === 'completed' && !!report && (
+          <Button variant="outline" size="sm" onClick={handleDownload}>
+            <Icon as={Download} />
+            Download Updated Resume
+          </Button>
+        )}
       </HStack>
 
       {!report && analysis.status !== 'failed' && (

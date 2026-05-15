@@ -199,6 +199,9 @@ export const analysisApi = {
   getStatus: (id: string) =>
     apiClient.get<AnalysisStatusResponse>(`/analysis/status/${id}`).then((r) => r.data),
 
+  download: (id: string) =>
+    apiClient.get<Blob>(`/analysis/${id}/download`, { responseType: 'blob' }).then((r) => r.data),
+
   delete: (id: string) => apiClient.delete(`/analysis/${id}`),
 }
 

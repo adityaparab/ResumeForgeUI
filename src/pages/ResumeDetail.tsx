@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { EditableStructuredContent } from '@/features/resume/components/EditableStructuredContent'
-import { analysisApi, resumeApi } from '@/lib/api-client'
+import { resumeApi } from '@/lib/api-client'
 import type { StructuredContent } from '@/lib/schemas/resume.schema'
 
 export default function ResumeDetail() {
@@ -22,12 +22,6 @@ export default function ResumeDetail() {
   } = useQuery({
     queryKey: ['resume', resumeId],
     queryFn: () => resumeApi.getById(resumeId as string),
-    enabled: !!resumeId,
-  })
-
-  const { data: analyses } = useQuery({
-    queryKey: ['analysis-for-resume', resumeId],
-    queryFn: () => analysisApi.list(1, 100),
     enabled: !!resumeId,
   })
 
@@ -49,15 +43,6 @@ export default function ResumeDetail() {
   useEffect(() => {
     setDraftContent(originalContent)
   }, [originalContent])
-
-  const hasAnalysisResult = Boolean(
-    analyses?.data.some(
-      (analysis) =>
-        analysis.resumeId === resumeId &&
-        analysis.status === 'completed' &&
-        Boolean(analysis.result),
-    ),
-  )
 
   const isDirty =
     draftContent !== null && JSON.stringify(draftContent) !== JSON.stringify(originalContent)
@@ -136,10 +121,10 @@ export default function ResumeDetail() {
           <Badge colorPalette={statusColor} variant="subtle">
             {resume.status}
           </Badge>
-          {resume.status === 'completed' && hasAnalysisResult && (
+          {resume.status === 'completed' && (
             <Button variant="outline" size="sm" onClick={handleDownload}>
               <Icon as={Download} />
-              Download
+              Download Structured Resume
             </Button>
           )}
         </HStack>
