@@ -11,6 +11,26 @@ const MOCK_AUTH = {
   user: MOCK_USER,
 }
 
+const MOCK_STRUCTURED_CONTENT = {
+  basics: {
+    name: 'Ada Lovelace',
+    label: 'Software Engineer',
+    email: 'ada@example.com',
+    summary: 'Builds dependable TypeScript products.',
+  },
+  work: [
+    {
+      name: 'Analytical Engines Inc',
+      position: 'Frontend Engineer',
+      startDate: '2020',
+      endDate: null,
+      summary: 'Built resume tooling workflows.',
+      highlights: ['React', 'TypeScript'],
+    },
+  ],
+  skills: [{ name: 'TypeScript', keywords: ['React', 'Node'] }],
+}
+
 const MOCK_RESUME = {
   id: 'resume-1',
   userId: 'user-1',
@@ -136,4 +156,4 @@ export async function mockCreateAnalysis(page: Page) {
   })
 }
 
-export { MOCK_ANALYSIS, MOCK_AUTH, MOCK_RESUME, MOCK_USER }
+export { MOCK_ANALYSIS, MOCK_AUTH, MOCK_RESUME, MOCK_STRUCTURED_CONTENT, MOCK_USER }

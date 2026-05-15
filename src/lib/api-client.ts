@@ -173,6 +173,9 @@ export const resumeApi = {
 
   getById: (id: string) => apiClient.get<Resume>(`/resume/${id}`).then((r) => r.data),
 
+  updateStructuredContent: (id: string, structuredContent: Resume['structuredContent']) =>
+    apiClient.patch<Resume>(`/resume/${id}`, { structuredContent }).then((r) => r.data),
+
   getStatus: (id: string) =>
     apiClient.get<ResumeStatusResponse>(`/resume/status/${id}`).then((r) => r.data),
 

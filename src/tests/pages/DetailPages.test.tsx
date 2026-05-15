@@ -18,6 +18,14 @@ vi.mock('react-router', async (importOriginal) => {
   }
 })
 
+function mockAnalysisResultsForResume(analyses = [mockAnalysis]) {
+  server.use(
+    http.get(`${API_URL}/analysis`, () =>
+      HttpResponse.json({ data: analyses, total: analyses.length, page: 1, limit: 100 }),
+    ),
+  )
+}
+
 describe('AnalysisResult', () => {
   it('shows loading spinner initially', () => {
     render(<AnalysisResult />)
@@ -85,6 +93,18 @@ describe('AnalysisResult', () => {
     })
   })
 
+  it('shows completed empty-result message when completed analysis has no report', async () => {
+    server.use(
+      http.get(`${API_URL}/analysis/:id`, () =>
+        HttpResponse.json({ ...mockAnalysis, status: 'completed', result: null }),
+      ),
+    )
+    render(<AnalysisResult />)
+    await waitFor(() => {
+      expect(screen.getByText(/completed analysis has no result data/i)).toBeInTheDocument()
+    })
+  })
+
   it('shows error message for failed analysis', async () => {
     server.use(
       http.get(`${API_URL}/analysis/:id`, () =>
@@ -138,6 +158,53 @@ describe('AnalysisResult', () => {
       expect(screen.getByText('40')).toBeInTheDocument()
     })
   })
+
+  it('renders direct and partial analysis report payloads safely', async () => {
+    server.use(
+      http.get(`${API_URL}/analysis/:id`, () =>
+        HttpResponse.json({
+          ...mockAnalysis,
+          result: {
+            score: '101',
+            summary: '',
+            strengths: ['Adaptable', 12],
+            gaps: undefined,
+            recommendations: undefined,
+            matchedKeywords: undefined,
+            missingKeywords: undefined,
+          },
+        }),
+      ),
+    )
+    render(<AnalysisResult />)
+    await waitFor(() => {
+      expect(screen.getByText('100')).toBeInTheDocument()
+      expect(screen.getByText('No summary available.')).toBeInTheDocument()
+      expect(screen.getByText('Adaptable')).toBeInTheDocument()
+      expect(screen.getAllByText('No items available.')).toHaveLength(2)
+      expect(screen.getAllByText('None')).toHaveLength(2)
+    })
+  })
+
+  it('renders invalid analysis scores as zero', async () => {
+    server.use(
+      http.get(`${API_URL}/analysis/:id`, () =>
+        HttpResponse.json({
+          ...mockAnalysis,
+          result: {
+            analysisReport: {
+              ...mockAnalysis.result.analysisReport,
+              score: 'not-a-number',
+            },
+          },
+        }),
+      ),
+    )
+    render(<AnalysisResult />)
+    await waitFor(() => {
+      expect(screen.getByText('0')).toBeInTheDocument()
+    })
+  })
 })
 
 describe('ResumeDetail', () => {
@@ -175,7 +242,15 @@ describe('ResumeDetail', () => {
     expect(backBtn).toBeInTheDocument()
   })
 
-  it('shows download button for completed resume', async () => {
+  it('hides download button until a completed analysis result exists for the resume', async () => {
+    render(<ResumeDetail />)
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: /download/i })).not.toBeInTheDocument()
+    })
+  })
+
+  it('shows download button for completed resume when analysis result exists', async () => {
+    mockAnalysisResultsForResume()
     render(<ResumeDetail />)
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /download/i })).toBeInTheDocument()
@@ -220,15 +295,18 @@ describe('ResumeDetail', () => {
     )
     render(<ResumeDetail />)
     await waitFor(() => {
-      expect(screen.getByText('John Doe')).toBeInTheDocument()
-      expect(screen.getByText('Software Engineer')).toBeInTheDocument()
-      expect(screen.getByText('ACME Corp')).toBeInTheDocument()
-      expect(screen.getByText('State University')).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Basics' })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Work Experience' })).toBeInTheDocument()
+      expect(screen.getByDisplayValue('John Doe')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('Software Engineer')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('ACME Corp')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('State University')).toBeInTheDocument()
     })
   })
 
   it('triggers download when download button is clicked', async () => {
     const user = userEvent.setup()
+    mockAnalysisResultsForResume()
     // Spy on URL.createObjectURL
     const mockCreateObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:url')
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
@@ -240,6 +318,20 @@ describe('ResumeDetail', () => {
       expect(mockCreateObjectURL).toHaveBeenCalled()
     })
     vi.restoreAllMocks()
+  })
+
+  it('shows a friendly error when download fails', async () => {
+    const user = userEvent.setup()
+    mockAnalysisResultsForResume()
+    server.use(
+      http.get(`${API_URL}/resume/:id/download`, () => HttpResponse.json({}, { status: 500 })),
+    )
+    render(<ResumeDetail />)
+    const downloadBtn = await screen.findByRole('button', { name: /download/i })
+    await user.click(downloadBtn)
+    await waitFor(() => {
+      expect(screen.getByText('Could not download resume.')).toBeInTheDocument()
+    })
   })
 
   it('renders structuredContent with partial fields (no dates, no summary)', async () => {
@@ -264,10 +356,10 @@ describe('ResumeDetail', () => {
     )
     render(<ResumeDetail />)
     await waitFor(() => {
-      expect(screen.getByText('Jane')).toBeInTheDocument()
-      expect(screen.getByText('Corp')).toBeInTheDocument()
-      expect(screen.getByText('Uni')).toBeInTheDocument()
-      expect(screen.getByText('Python')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('Jane')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('Corp')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('Uni')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('Python')).toBeInTheDocument()
     })
   })
 
@@ -346,7 +438,112 @@ describe('ResumeDetail', () => {
     )
     render(<ResumeDetail />)
     await waitFor(() => {
-      expect(screen.getByText('State U')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('State U')).toBeInTheDocument()
+    })
+  })
+
+  it('edits resume fields in place and resets changes', async () => {
+    const user = userEvent.setup()
+    server.use(
+      http.get(`${API_URL}/resume/:id`, () =>
+        HttpResponse.json({
+          ...mockResume,
+          structuredContent: {
+            basics: { name: 'John Doe', summary: 'Original summary' },
+            work: [{ name: 'ACME Corp', position: 'Engineer', highlights: ['Built tools'] }],
+            skills: [{ name: 'TypeScript', keywords: ['React', 'Node'] }],
+          },
+        }),
+      ),
+    )
+    render(<ResumeDetail />)
+    const nameInput = await screen.findByDisplayValue('John Doe')
+    const summaryInput = screen.getByLabelText('Summary')
+    const keywordsInput = screen.getByLabelText('Keywords')
+    await user.clear(nameInput)
+    await user.type(nameInput, 'Jane Doe')
+    await user.clear(summaryInput)
+    await user.type(summaryInput, 'Updated summary')
+    await user.clear(keywordsInput)
+    await user.type(keywordsInput, 'React\nNode\nVitest')
+    expect(screen.getByRole('button', { name: /save changes/i })).toBeEnabled()
+    await user.click(screen.getByRole('button', { name: /reset/i }))
+    expect(nameInput).toHaveValue('John Doe')
+    expect(summaryInput).toHaveValue('Original summary')
+    expect(screen.getByLabelText('Keywords')).toHaveValue('React\nNode')
+  })
+
+  it('submits edited resume fields', async () => {
+    const user = userEvent.setup()
+    let savedName = ''
+    server.use(
+      http.get(`${API_URL}/resume/:id`, () =>
+        HttpResponse.json({ ...mockResume, structuredContent: { basics: { name: 'John Doe' } } }),
+      ),
+      http.patch(`${API_URL}/resume/:id`, async ({ request }) => {
+        const body = (await request.json()) as { structuredContent: { basics: { name: string } } }
+        savedName = body.structuredContent.basics.name
+        return HttpResponse.json({ ...mockResume, structuredContent: body.structuredContent })
+      }),
+    )
+    render(<ResumeDetail />)
+    const nameInput = await screen.findByLabelText('Name')
+    await user.clear(nameInput)
+    await user.type(nameInput, 'Jane Doe')
+    await user.click(screen.getByRole('button', { name: /save changes/i }))
+    await waitFor(() => {
+      expect(savedName).toBe('Jane Doe')
+      expect(screen.getByText('Resume details saved.')).toBeInTheDocument()
+    })
+  })
+
+  it('shows a friendly error when edited resume save fails', async () => {
+    const user = userEvent.setup()
+    server.use(
+      http.get(`${API_URL}/resume/:id`, () =>
+        HttpResponse.json({ ...mockResume, structuredContent: { basics: { name: 'John Doe' } } }),
+      ),
+      http.patch(`${API_URL}/resume/:id`, () => HttpResponse.json({}, { status: 500 })),
+    )
+    render(<ResumeDetail />)
+    const nameInput = await screen.findByLabelText('Name')
+    await user.clear(nameInput)
+    await user.type(nameInput, 'Jane Doe')
+    await user.click(screen.getByRole('button', { name: /save changes/i }))
+    await waitFor(() => {
+      expect(screen.getByText('Could not save resume details.')).toBeInTheDocument()
+    })
+  })
+
+  it('handles save responses without structured content', async () => {
+    const user = userEvent.setup()
+    server.use(
+      http.get(`${API_URL}/resume/:id`, () =>
+        HttpResponse.json({ ...mockResume, structuredContent: { basics: { name: 'John Doe' } } }),
+      ),
+      http.patch(`${API_URL}/resume/:id`, () =>
+        HttpResponse.json({ ...mockResume, structuredContent: null }),
+      ),
+    )
+    render(<ResumeDetail />)
+    const nameInput = await screen.findByLabelText('Name')
+    await user.clear(nameInput)
+    await user.type(nameInput, 'Jane Doe')
+    await user.click(screen.getByRole('button', { name: /save changes/i }))
+    await waitFor(() => {
+      expect(screen.getByText('Resume details saved.')).toBeInTheDocument()
+    })
+  })
+
+  it('renders an empty structured content state', async () => {
+    server.use(
+      http.get(`${API_URL}/resume/:id`, () =>
+        HttpResponse.json({ ...mockResume, structuredContent: { work: [] } }),
+      ),
+    )
+    render(<ResumeDetail />)
+    await waitFor(() => {
+      expect(screen.getByText('No structured fields available.')).toBeInTheDocument()
     })
   })
 })

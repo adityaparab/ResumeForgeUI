@@ -1,7 +1,10 @@
 import { expect, test } from '@playwright/test'
 import {
   loginUser,
+  MOCK_ANALYSIS,
   MOCK_RESUME,
+  MOCK_STRUCTURED_CONTENT,
+  mockAnalysisList,
   mockDashboardAPIs,
   mockResumeList,
   mockUploadResume,
@@ -145,6 +148,52 @@ test.describe('Resume Flow', () => {
       // Click the View button in the resume row
       await page.getByRole('button', { name: 'View' }).click()
       await expect(page).toHaveURL(new RegExp(`/resume/${MOCK_RESUME.id}`))
+    })
+
+    test('displays structured content and editable resume fields', async ({ page }) => {
+      await page.route(`${API}/resume/${MOCK_RESUME.id}`, (route) => {
+        if (route.request().method() === 'PATCH') {
+          const body = route.request().postDataJSON() as { structuredContent: unknown }
+          return route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ ...MOCK_RESUME, structuredContent: body.structuredContent }),
+          })
+        }
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ ...MOCK_RESUME, structuredContent: MOCK_STRUCTURED_CONTENT }),
+        })
+      })
+      await page.goto(`/resume/${MOCK_RESUME.id}`)
+      await expect(page.getByRole('heading', { name: 'Basics' })).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'Work Experience' })).toBeVisible()
+      const nameField = page.getByLabel('Name').first()
+      await expect(nameField).toHaveValue('Ada Lovelace')
+      await nameField.fill('Ada Byron')
+      await expect(page.getByRole('button', { name: 'Save changes' })).toBeEnabled()
+      await page.getByRole('button', { name: 'Reset' }).click()
+      await expect(nameField).toHaveValue('Ada Lovelace')
+      await nameField.fill('Ada Byron')
+      await page.getByRole('button', { name: 'Save changes' }).click()
+      await expect(page.getByText('Resume details saved.')).toBeVisible()
+    })
+
+    test('gates download button behind completed analysis results', async ({ page }) => {
+      await page.route(`${API}/resume/${MOCK_RESUME.id}`, (route) =>
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ ...MOCK_RESUME, structuredContent: MOCK_STRUCTURED_CONTENT }),
+        }),
+      )
+      await page.goto(`/resume/${MOCK_RESUME.id}`)
+      await expect(page.getByRole('button', { name: 'Download' })).toHaveCount(0)
+
+      await mockAnalysisList(page, [MOCK_ANALYSIS])
+      await page.goto(`/resume/${MOCK_RESUME.id}`)
+      await expect(page.getByRole('button', { name: 'Download' })).toBeVisible()
     })
   })
 })

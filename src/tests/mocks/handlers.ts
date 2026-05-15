@@ -97,6 +97,11 @@ export const handlers = [
     return HttpResponse.json(mockResume)
   }),
 
+  http.patch(`${API_URL}/resume/:id`, async ({ request }) => {
+    const body = (await request.json()) as { structuredContent?: unknown }
+    return HttpResponse.json({ ...mockResume, structuredContent: body.structuredContent })
+  }),
+
   http.get(`${API_URL}/resume/status/:id`, () => {
     return HttpResponse.json({
       id: '66f1a2b3c4d5e6f7a8b9c0d1',

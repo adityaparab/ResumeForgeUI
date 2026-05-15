@@ -57,6 +57,12 @@ describe('api-client', () => {
       expect(result).toBeInstanceOf(Blob)
     })
 
+    it('updateStructuredContent patches resume content', async () => {
+      const structuredContent = { basics: { name: 'Updated Person' } }
+      const result = await resumeApi.updateStructuredContent(mockResume.id, structuredContent)
+      expect(result.structuredContent).toEqual(structuredContent)
+    })
+
     it('delete calls DELETE /resume/:id', async () => {
       server.use(http.delete(`${API_URL}/resume/:id`, () => HttpResponse.json({})))
       await expect(resumeApi.delete(mockResume.id)).resolves.not.toThrow()

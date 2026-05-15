@@ -5,6 +5,49 @@ import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { analysisApi } from '@/lib/api-client'
 import { cn } from '@/lib/utils'
 
+interface NormalizedAnalysisReport {
+  score: number
+  summary: string
+  strengths: string[]
+  gaps: string[]
+  recommendations: string[]
+  matchedKeywords: string[]
+  missingKeywords: string[]
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function getStringList(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((item): item is string => typeof item === 'string')
+}
+
+function getScore(value: unknown): number {
+  const score = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(score)) return 0
+  return Math.min(100, Math.max(0, score))
+}
+
+function getSummary(value: unknown): string {
+  return typeof value === 'string' && value.trim() ? value : 'No summary available.'
+}
+
+function getAnalysisReport(result: unknown): NormalizedAnalysisReport | null {
+  if (!isRecord(result)) return null
+  const source = isRecord(result.analysisReport) ? result.analysisReport : result
+  return {
+    score: getScore(source.score),
+    summary: getSummary(source.summary),
+    strengths: getStringList(source.strengths),
+    gaps: getStringList(source.gaps),
+    recommendations: getStringList(source.recommendations),
+    matchedKeywords: getStringList(source.matchedKeywords),
+    missingKeywords: getStringList(source.missingKeywords),
+  }
+}
+
 function ScoreBadge({ score }: { score: number }) {
   const color =
     score >= 80 ? 'text-green-600' : score >= 60 ? 'text-yellow-600' : 'text-destructive'
@@ -17,6 +60,10 @@ function ScoreBadge({ score }: { score: number }) {
 }
 
 function TagList({ items, color }: { items: string[]; color: string }) {
+  if (items.length === 0) {
+    return <p className="text-sm text-muted-foreground">None</p>
+  }
+
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((item) => (
@@ -25,6 +72,23 @@ function TagList({ items, color }: { items: string[]; color: string }) {
         </span>
       ))}
     </div>
+  )
+}
+
+function InsightList({ items, color }: { items: string[]; color: string }) {
+  if (items.length === 0) {
+    return <p className="text-sm text-muted-foreground">No items available.</p>
+  }
+
+  return (
+    <ul className="space-y-2 text-sm text-muted-foreground">
+      {items.map((item) => (
+        <li key={item} className="flex items-start gap-2">
+          <span className={cn('mt-1.5 size-1.5 shrink-0 rounded-full', color)} />
+          {item}
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -38,7 +102,7 @@ export default function AnalysisResult() {
     isError,
   } = useQuery({
     queryKey: ['analysis', analysisId],
-    queryFn: () => analysisApi.getById(analysisId!),
+    queryFn: () => analysisApi.getById(analysisId as string),
     enabled: !!analysisId,
   })
 
@@ -69,7 +133,7 @@ export default function AnalysisResult() {
     )
   }
 
-  const report = analysis.result?.analysisReport
+  const report = getAnalysisReport(analysis.result)
 
   return (
     <div className="space-y-6">
@@ -105,7 +169,9 @@ export default function AnalysisResult() {
 
       {!report && analysis.status !== 'failed' && (
         <div className="rounded-lg border border-border bg-card px-4 py-6 text-center text-muted-foreground">
-          Analysis is still processing. Check back soon.
+          {analysis.status === 'completed'
+            ? 'Completed analysis has no result data available.'
+            : 'Analysis is still processing. Check back soon.'}
         </div>
       )}
 
@@ -137,14 +203,7 @@ export default function AnalysisResult() {
                 <CheckCircle2 className="size-5 text-green-500" />
                 Strengths
               </h2>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                {report.strengths.map((s) => (
-                  <li key={s} className="flex items-start gap-2">
-                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-green-500" />
-                    {s}
-                  </li>
-                ))}
-              </ul>
+              <InsightList items={report.strengths} color="bg-green-500" />
             </section>
 
             {/* Gaps */}
@@ -153,14 +212,7 @@ export default function AnalysisResult() {
                 <XCircle className="size-5 text-destructive" />
                 Gaps
               </h2>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                {report.gaps.map((g) => (
-                  <li key={g} className="flex items-start gap-2">
-                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-destructive" />
-                    {g}
-                  </li>
-                ))}
-              </ul>
+              <InsightList items={report.gaps} color="bg-destructive" />
             </section>
           </div>
 
@@ -170,14 +222,7 @@ export default function AnalysisResult() {
               <Zap className="size-5 text-yellow-500" />
               Recommendations
             </h2>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              {report.recommendations.map((r) => (
-                <li key={r} className="flex items-start gap-2">
-                  <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-yellow-500" />
-                  {r}
-                </li>
-              ))}
-            </ul>
+            <InsightList items={report.recommendations} color="bg-yellow-500" />
           </section>
 
           {/* Keywords */}
