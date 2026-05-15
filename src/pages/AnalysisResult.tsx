@@ -1,11 +1,31 @@
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
+import ErrorRoundedIcon from '@mui/icons-material/ErrorRounded'
+import SellRoundedIcon from '@mui/icons-material/SellRounded'
+import TipsAndUpdatesRoundedIcon from '@mui/icons-material/TipsAndUpdatesRounded'
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded'
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  Chip,
+  LinearProgress,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Paper,
+  Stack,
+  Typography,
+} from '@mui/material'
+import type { ChipProps } from '@mui/material/Chip'
+import type { LinearProgressProps } from '@mui/material/LinearProgress'
 import { useQuery } from '@tanstack/react-query'
-import { BarChart3, CheckCircle2, ChevronLeft, XCircle, Zap } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
-import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
 import { analysisApi } from '@/lib/api-client'
-import { cn } from '@/lib/utils'
 
 interface NormalizedAnalysisReport {
   score: number
@@ -15,6 +35,14 @@ interface NormalizedAnalysisReport {
   recommendations: string[]
   matchedKeywords: string[]
   missingKeywords: string[]
+}
+
+const STATUS_CHIP: Record<string, ChipProps['color']> = {
+  completed: 'success',
+  failed: 'error',
+  processing: 'info',
+  queued: 'warning',
+  pending: 'warning',
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -72,47 +100,66 @@ function extractReport(source: unknown): NormalizedAnalysisReport | null {
   }
 }
 
-function ScoreBadge({ score }: { score: number }) {
-  const color =
-    score >= 80 ? 'text-green-600' : score >= 60 ? 'text-yellow-600' : 'text-destructive'
+function getScoreColor(score: number): LinearProgressProps['color'] {
+  if (score >= 80) return 'success'
+  if (score >= 60) return 'warning'
+  return 'error'
+}
+
+function ScoreSummary({ score }: { score: number }) {
+  const scoreColor = getScoreColor(score)
   return (
-    <div className={cn('flex flex-col items-center', color)}>
-      <span className="text-5xl font-bold">{score}</span>
-      <span className="text-sm font-medium">/ 100</span>
-    </div>
+    <Box sx={{ minWidth: { xs: '100%', sm: 180 } }}>
+      <Stack direction="row" spacing={0.75} sx={{ alignItems: 'baseline' }}>
+        <Typography color={`${scoreColor}.main`} component="span" variant="h2">
+          {score}
+        </Typography>
+        <Typography color="text.secondary" component="span" variant="subtitle1">
+          / 100
+        </Typography>
+      </Stack>
+      <LinearProgress
+        aria-label={`Match score ${score} out of 100`}
+        color={scoreColor}
+        sx={{ mt: 1.5, borderRadius: 999, height: 8 }}
+        value={score}
+        variant="determinate"
+      />
+    </Box>
   )
 }
 
-function TagList({ items, variant }: { items: string[]; variant: 'success' | 'destructive' }) {
+function TagList({ items, color }: { items: string[]; color: ChipProps['color'] }) {
   if (items.length === 0) {
-    return <p className="text-sm text-muted-foreground">None</p>
+    return <Typography color="text.secondary">None</Typography>
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
       {items.map((item) => (
-        <Badge key={item} variant={variant}>
-          {item}
-        </Badge>
+        <Chip color={color} key={item} label={item} size="small" variant="outlined" />
       ))}
-    </div>
+    </Stack>
   )
 }
 
-function InsightList({ items, color }: { items: string[]; color: string }) {
+function InsightList({ items, icon }: { items: string[]; icon: ReactNode }) {
   if (items.length === 0) {
-    return <p className="text-sm text-muted-foreground">No items available.</p>
+    return <Typography color="text.secondary">No items available.</Typography>
   }
 
   return (
-    <ul className="space-y-2 text-sm text-muted-foreground">
+    <List disablePadding>
       {items.map((item) => (
-        <li key={item} className="flex items-start gap-2">
-          <span className={cn('mt-1.5 size-1.5 shrink-0 rounded-full', color)} />
-          {item}
-        </li>
+        <ListItem disableGutters key={item} sx={{ alignItems: 'flex-start', py: 0.75 }}>
+          <ListItemIcon sx={{ minWidth: 32, pt: 0.25 }}>{icon}</ListItemIcon>
+          <ListItemText
+            primary={item}
+            slotProps={{ primary: { color: 'text.secondary', variant: 'body2' } }}
+          />
+        </ListItem>
       ))}
-    </ul>
+    </List>
   )
 }
 
@@ -126,141 +173,223 @@ export default function AnalysisResult() {
     isError,
   } = useQuery({
     queryKey: ['analysis', analysisId],
-    queryFn: () => analysisApi.getById(analysisId as string),
+    queryFn: () => {
+      if (!analysisId) throw new Error('Missing analysis ID')
+      return analysisApi.getById(analysisId)
+    },
     enabled: !!analysisId,
   })
 
   if (!analysisId) {
     return (
-      <div role="alert" className="text-destructive">
-        Invalid analysis ID.
-      </div>
+      <Paper elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 3 }}>
+        <Alert severity="error" role="alert">
+          Invalid analysis ID.
+        </Alert>
+      </Paper>
     )
   }
 
   if (isLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <LoadingSpinner />
-      </div>
+      <Paper
+        elevation={0}
+        sx={{
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 2,
+          display: 'grid',
+          minHeight: 256,
+          placeItems: 'center',
+        }}
+      >
+        <LoadingSpinner label="Loading analysis result" />
+      </Paper>
     )
   }
 
   if (isError || !analysis) {
     return (
-      <div
-        role="alert"
-        className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
-      >
-        Failed to load analysis result.
-      </div>
+      <Paper elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 3 }}>
+        <Alert severity="error" role="alert">
+          Failed to load analysis result.
+        </Alert>
+      </Paper>
     )
   }
 
   const report = getAnalysisReport(analysis.result)
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <button
+    <Stack spacing={3}>
+      <Box>
+        <Button
           type="button"
           onClick={() => navigate('/analysis')}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+          startIcon={<ArrowBackRoundedIcon />}
+          variant="text"
         >
-          <ChevronLeft className="size-4" />
           Back to Analyses
-        </button>
-      </div>
+        </Button>
+      </Box>
 
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Analysis Result</h1>
-          <p className="mt-1 text-sm text-muted-foreground font-mono">{analysisId}</p>
-        </div>
-        <Badge
-          variant={
-            analysis.status === 'completed'
-              ? 'success'
-              : analysis.status === 'failed'
-                ? 'destructive'
-                : 'warning'
-          }
+      <Paper
+        elevation={0}
+        sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: { xs: 2, sm: 3 } }}
+      >
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={2}
+          sx={{ alignItems: { xs: 'flex-start', md: 'center' }, justifyContent: 'space-between' }}
         >
-          {analysis.status}
-        </Badge>
-      </div>
+          <Box>
+            <Typography component="h1" variant="h4">
+              Analysis Result
+            </Typography>
+            <Typography
+              color="text.secondary"
+              sx={{ fontFamily: 'monospace', mt: 0.75 }}
+              variant="body2"
+            >
+              {analysisId}
+            </Typography>
+          </Box>
+          <Chip
+            color={STATUS_CHIP[analysis.status] ?? 'default'}
+            label={analysis.status}
+            size="small"
+          />
+        </Stack>
+      </Paper>
 
       {!report && analysis.status !== 'failed' && (
-        <Card className="px-4 py-6 text-center text-muted-foreground">
-          {analysis.status === 'completed'
-            ? 'Completed analysis has no result data available.'
-            : 'Analysis is still processing. Check back soon.'}
-        </Card>
+        <Paper
+          elevation={0}
+          sx={{
+            border: 1,
+            borderColor: 'divider',
+            borderRadius: 2,
+            px: 2,
+            py: 6,
+            textAlign: 'center',
+          }}
+        >
+          <Typography color="text.secondary">
+            {analysis.status === 'completed'
+              ? 'Completed analysis has no result data available.'
+              : 'Analysis is still processing. Check back soon.'}
+          </Typography>
+        </Paper>
       )}
 
-      {analysis.status === 'failed' && analysis.error && (
-        <div
-          role="alert"
-          className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
-        >
-          {analysis.error}
-        </div>
+      {analysis.status === 'failed' && (
+        <Alert severity="error" role="alert">
+          {analysis.error ?? 'Analysis failed before a result was generated.'}
+        </Alert>
       )}
 
       {report && (
-        <div className="space-y-6">
-          {/* Score card */}
-          <Card className="flex items-center gap-8 p-6">
-            <ScoreBadge score={report.score} />
-            <div className="flex-1">
-              <h2 className="mb-2 text-lg font-semibold text-foreground">Match Score</h2>
-              <p className="text-sm text-muted-foreground">{report.summary}</p>
-            </div>
-            <BarChart3 className="size-10 shrink-0 text-muted-foreground/30" />
+        <Stack spacing={3}>
+          <Card
+            elevation={0}
+            sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: { xs: 2, sm: 3 } }}
+          >
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              spacing={3}
+              sx={{ alignItems: { xs: 'stretch', md: 'center' } }}
+            >
+              <ScoreSummary score={report.score} />
+              <Box sx={{ flex: 1 }}>
+                <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
+                  <TrendingUpRoundedIcon color="primary" />
+                  <Typography component="h2" variant="h6">
+                    Match Score
+                  </Typography>
+                </Stack>
+                <Typography color="text.secondary">{report.summary}</Typography>
+              </Box>
+            </Stack>
           </Card>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Strengths */}
-            <Card className="p-6">
-              <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-foreground">
-                <CheckCircle2 className="size-5 text-green-500" />
-                Strengths
-              </h2>
-              <InsightList items={report.strengths} color="bg-green-500" />
+          <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' } }}>
+            <Card
+              elevation={0}
+              sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: { xs: 2, sm: 3 } }}
+            >
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1.5 }}>
+                <CheckCircleRoundedIcon color="success" />
+                <Typography component="h2" variant="h6">
+                  Strengths
+                </Typography>
+              </Stack>
+              <InsightList
+                items={report.strengths}
+                icon={<CheckCircleRoundedIcon color="success" fontSize="small" />}
+              />
             </Card>
 
-            {/* Gaps */}
-            <Card className="p-6">
-              <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-foreground">
-                <XCircle className="size-5 text-destructive" />
-                Gaps
-              </h2>
-              <InsightList items={report.gaps} color="bg-destructive" />
+            <Card
+              elevation={0}
+              sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: { xs: 2, sm: 3 } }}
+            >
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1.5 }}>
+                <ErrorRoundedIcon color="error" />
+                <Typography component="h2" variant="h6">
+                  Gaps
+                </Typography>
+              </Stack>
+              <InsightList
+                items={report.gaps}
+                icon={<ErrorRoundedIcon color="error" fontSize="small" />}
+              />
             </Card>
-          </div>
+          </Box>
 
-          {/* Recommendations */}
-          <Card className="p-6">
-            <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-foreground">
-              <Zap className="size-5 text-yellow-500" />
-              Recommendations
-            </h2>
-            <InsightList items={report.recommendations} color="bg-yellow-500" />
+          <Card
+            elevation={0}
+            sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: { xs: 2, sm: 3 } }}
+          >
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1.5 }}>
+              <TipsAndUpdatesRoundedIcon color="warning" />
+              <Typography component="h2" variant="h6">
+                Recommendations
+              </Typography>
+            </Stack>
+            <InsightList
+              items={report.recommendations}
+              icon={<TipsAndUpdatesRoundedIcon color="warning" fontSize="small" />}
+            />
           </Card>
 
-          {/* Keywords */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Card className="p-6">
-              <h2 className="mb-4 text-base font-semibold text-foreground">Matched Keywords</h2>
-              <TagList items={report.matchedKeywords} variant="success" />
+          <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' } }}>
+            <Card
+              elevation={0}
+              sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: { xs: 2, sm: 3 } }}
+            >
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1.5 }}>
+                <SellRoundedIcon color="success" />
+                <Typography component="h2" variant="h6">
+                  Matched Keywords
+                </Typography>
+              </Stack>
+              <TagList color="success" items={report.matchedKeywords} />
             </Card>
-            <Card className="p-6">
-              <h2 className="mb-4 text-base font-semibold text-foreground">Missing Keywords</h2>
-              <TagList items={report.missingKeywords} variant="destructive" />
+            <Card
+              elevation={0}
+              sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: { xs: 2, sm: 3 } }}
+            >
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1.5 }}>
+                <SellRoundedIcon color="error" />
+                <Typography component="h2" variant="h6">
+                  Missing Keywords
+                </Typography>
+              </Stack>
+              <TagList color="error" items={report.missingKeywords} />
             </Card>
-          </div>
-        </div>
+          </Box>
+        </Stack>
       )}
-    </div>
+    </Stack>
   )
 }

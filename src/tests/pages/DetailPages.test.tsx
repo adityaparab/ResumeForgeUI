@@ -44,6 +44,11 @@ describe('AnalysisResult', () => {
     render(<AnalysisResult />)
     await waitFor(() => {
       expect(screen.getByText(String(mockAnalysis.result.analysisReport.score))).toBeInTheDocument()
+      expect(
+        screen.getByRole('progressbar', {
+          name: new RegExp(`match score ${mockAnalysis.result.analysisReport.score}`, 'i'),
+        }),
+      ).toBeInTheDocument()
     })
   })
 
