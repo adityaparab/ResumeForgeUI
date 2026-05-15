@@ -1,6 +1,6 @@
+import { Button, Center, Heading, Text, VStack } from '@chakra-ui/react'
 import * as Sentry from '@sentry/react'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
-import { Button } from '@/components/ui/button'
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -38,16 +38,22 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
       }
 
       return (
-        <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 p-8">
-          <div className="text-destructive text-4xl">!</div>
-          <h2 className="text-xl font-semibold">Something went wrong</h2>
-          <p className="text-muted-foreground max-w-md text-center">
-            {this.state.error?.message ?? 'An unexpected error occurred. Please try again.'}
-          </p>
-          <Button onClick={this.handleReset} variant="outline">
-            Try Again
-          </Button>
-        </div>
+        <Center minH="400px" p={8}>
+          <VStack gap={4} textAlign="center">
+            <Text fontSize="4xl" color="red.500" fontWeight="bold">
+              !
+            </Text>
+            <Heading size="md" color="fg">
+              Something went wrong
+            </Heading>
+            <Text color="fg.muted" maxW="md">
+              {this.state.error?.message ?? 'An unexpected error occurred. Please try again.'}
+            </Text>
+            <Button variant="outline" colorPalette="purple" onClick={this.handleReset}>
+              Try Again
+            </Button>
+          </VStack>
+        </Center>
       )
     }
 

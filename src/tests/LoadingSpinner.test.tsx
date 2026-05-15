@@ -22,9 +22,9 @@ describe('LoadingSpinner', () => {
     expect(spinner).toBeInTheDocument()
   })
 
-  it('renders with custom className', () => {
-    render(<LoadingSpinner className="my-custom-class" />)
+  it('renders with size prop without errors', () => {
+    render(<LoadingSpinner size="lg" />)
     const spinner = screen.getByRole('status')
-    expect(spinner.className).toContain('my-custom-class')
+    expect(spinner).toBeInTheDocument()
   })
 })

@@ -1,31 +1,25 @@
-import { cn } from '@/lib/utils'
+import { Spinner, Text, VStack } from '@chakra-ui/react'
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg'
-  className?: string
   label?: string
 }
 
 const sizeMap = {
-  sm: 'h-4 w-4 border-2',
-  md: 'h-8 w-8 border-2',
-  lg: 'h-12 w-12 border-3',
-}
+  sm: 'sm',
+  md: 'md',
+  lg: 'xl',
+} as const
 
-export default function LoadingSpinner({ size = 'md', className, label }: LoadingSpinnerProps) {
+export default function LoadingSpinner({ size = 'md', label }: LoadingSpinnerProps) {
   return (
-    <div
-      className={cn('flex flex-col items-center justify-center gap-2', className)}
-      role="status"
-      aria-label={label ?? 'Loading'}
-    >
-      <div
-        className={cn(
-          'animate-spin rounded-full border-primary border-t-transparent',
-          sizeMap[size],
-        )}
-      />
-      {label && <p className="text-muted-foreground text-sm">{label}</p>}
-    </div>
+    <VStack gap={2} align="center" justify="center" role="status" aria-label={label ?? 'Loading'}>
+      <Spinner size={sizeMap[size]} colorPalette="purple" />
+      {label && (
+        <Text fontSize="sm" color="fg.muted">
+          {label}
+        </Text>
+      )}
+    </VStack>
   )
 }
