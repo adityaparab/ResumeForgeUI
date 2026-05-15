@@ -1,22 +1,32 @@
-import { cn } from '@/lib/utils'
+import { Box, Card, HStack, Text } from '@chakra-ui/react'
+import type { ReactNode } from 'react'
 
 interface StatsCardProps {
   title: string
   value: number | string
   description?: string
-  icon: React.ReactNode
-  className?: string
+  icon: ReactNode
 }
 
-export function StatsCard({ title, value, description, icon, className }: StatsCardProps) {
+export function StatsCard({ title, value, description, icon }: StatsCardProps) {
   return (
-    <div className={cn('rounded-xl border border-border bg-card p-6 shadow-sm', className)}>
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-muted-foreground">{title}</p>
-        <div className="text-muted-foreground">{icon}</div>
-      </div>
-      <p className="mt-2 text-3xl font-bold text-foreground">{value}</p>
-      {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
-    </div>
+    <Card.Root variant="outline" borderRadius="xl">
+      <Card.Body>
+        <HStack justify="space-between" align="flex-start">
+          <Text fontSize="sm" fontWeight="500" color="fg.muted">
+            {title}
+          </Text>
+          <Box color="fg.muted">{icon}</Box>
+        </HStack>
+        <Text fontSize="3xl" fontWeight="800" color="fg" mt={2} lineHeight="1">
+          {value}
+        </Text>
+        {description && (
+          <Text fontSize="xs" color="fg.muted" mt={1}>
+            {description}
+          </Text>
+        )}
+      </Card.Body>
+    </Card.Root>
   )
 }

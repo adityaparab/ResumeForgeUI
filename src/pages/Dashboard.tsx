@@ -1,7 +1,6 @@
+import { Box, Button, Card, Flex, Grid, Heading, HStack, Text, VStack } from '@chakra-ui/react'
 import { BarChart3, FileText, Plus, RefreshCw } from 'lucide-react'
 import { Link } from 'react-router'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { StatsCard } from '@/features/dashboard/components/StatsCard'
 import { StatsCardSkeleton } from '@/features/dashboard/components/StatsCardSkeleton'
 import { useDashboardStats } from '@/features/dashboard/hooks/useDashboardStats'
@@ -10,39 +9,53 @@ export default function Dashboard() {
   const { totalResumes, totalAnalyses, isLoading, isError, refetch } = useDashboardStats()
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+    <VStack gap={8} align="stretch">
+      {/* Page header */}
+      <Flex justify="space-between" align="flex-start" wrap="wrap" gap={4}>
+        <VStack gap={0.5} align="flex-start">
+          <Heading as="h1" size="xl" color="fg">
+            Dashboard
+          </Heading>
+          <Text fontSize="sm" color="fg.muted">
             Overview of your resumes and analyses
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+          </Text>
+        </VStack>
+        <HStack gap={2}>
           {isError && (
-            <Button variant="outline" size="sm" onClick={refetch}>
-              <RefreshCw className="mr-2 size-4" />
+            <Button variant="outline" size="sm" borderRadius="lg" onClick={refetch}>
+              <RefreshCw size={14} />
               Retry
             </Button>
           )}
-          <Button size="lg" render={<Link to="/resume" />}>
-            <Plus className="size-4" />
-            Upload Resume
+          <Button asChild colorPalette="purple" size="md" borderRadius="lg">
+            <Link to="/resume">
+              <Plus size={16} />
+              Upload Resume
+            </Link>
           </Button>
-        </div>
-      </div>
+        </HStack>
+      </Flex>
 
+      {/* Error banner */}
       {isError && (
-        <div
-          className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        <Box
+          px={4}
+          py={3}
+          borderRadius="lg"
+          bg="red.subtle"
+          borderWidth="1px"
+          borderColor="red.200"
           role="alert"
         >
-          Failed to load dashboard stats. Please try again.
-        </div>
+          <Text fontSize="sm" color="red.600">
+            Failed to load dashboard stats. Please try again.
+          </Text>
+        </Box>
       )}
 
-      <section aria-label="Summary statistics">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Stats grid */}
+      <Box as="section" aria-label="Summary statistics">
+        <Grid gap={4} templateColumns={{ base: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }}>
           {isLoading ? (
             <>
               <StatsCardSkeleton />
@@ -54,46 +67,78 @@ export default function Dashboard() {
                 title="Total Resumes"
                 value={totalResumes}
                 description="Resumes uploaded so far"
-                icon={<FileText className="size-5" />}
+                icon={<FileText size={20} />}
               />
               <StatsCard
                 title="Total Analyses"
                 value={totalAnalyses}
                 description="AI analyses completed"
-                icon={<BarChart3 className="size-5" />}
+                icon={<BarChart3 size={20} />}
               />
             </>
           )}
-        </div>
-      </section>
+        </Grid>
+      </Box>
 
-      <section aria-label="Quick actions">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">Quick Actions</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Card className="transition-colors hover:bg-accent hover:text-accent-foreground">
-            <Link to="/resume" className="flex items-center gap-4 p-5">
-              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <FileText className="size-5" />
-              </div>
-              <div>
-                <p className="font-medium">Upload Resume</p>
-                <p className="text-sm text-muted-foreground">Add a new PDF or DOCX file</p>
-              </div>
-            </Link>
-          </Card>
-          <Card className="transition-colors hover:bg-accent hover:text-accent-foreground">
-            <Link to="/analysis" className="flex items-center gap-4 p-5">
-              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <BarChart3 className="size-5" />
-              </div>
-              <div>
-                <p className="font-medium">Analyze Resume</p>
-                <p className="text-sm text-muted-foreground">Compare against a job description</p>
-              </div>
-            </Link>
-          </Card>
-        </div>
-      </section>
-    </div>
+      {/* Quick actions */}
+      <Box as="section" aria-label="Quick actions">
+        <Heading as="h2" size="md" color="fg" mb={4}>
+          Quick Actions
+        </Heading>
+        <Grid gap={4} templateColumns={{ base: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }}>
+          {[
+            {
+              to: '/resume',
+              icon: FileText,
+              label: 'Upload Resume',
+              sub: 'Add a new PDF or DOCX file',
+            },
+            {
+              to: '/analysis',
+              icon: BarChart3,
+              label: 'Analyze Resume',
+              sub: 'Compare against a job description',
+            },
+          ].map(({ to, icon: Icon, label, sub }) => (
+            <Card.Root
+              key={to}
+              asChild
+              variant="outline"
+              borderRadius="xl"
+              cursor="pointer"
+              _hover={{ borderColor: 'purple.400', shadow: 'sm' }}
+              transition="all 0.15s"
+            >
+              <Link to={to}>
+                <Card.Body>
+                  <HStack gap={4}>
+                    <Box
+                      w={10}
+                      h={10}
+                      borderRadius="lg"
+                      bg="purple.subtle"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      flexShrink={0}
+                    >
+                      <Icon size={20} color="var(--chakra-colors-purple-500)" />
+                    </Box>
+                    <VStack gap={0.5} align="flex-start">
+                      <Text fontWeight="600" color="fg" fontSize="sm">
+                        {label}
+                      </Text>
+                      <Text fontSize="xs" color="fg.muted">
+                        {sub}
+                      </Text>
+                    </VStack>
+                  </HStack>
+                </Card.Body>
+              </Link>
+            </Card.Root>
+          ))}
+        </Grid>
+      </Box>
+    </VStack>
   )
 }
