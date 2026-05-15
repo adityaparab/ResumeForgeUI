@@ -1,10 +1,18 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import RestartAltRoundedIcon from '@mui/icons-material/RestartAltRounded'
+import TroubleshootRoundedIcon from '@mui/icons-material/TroubleshootRounded'
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Link as MuiLink,
+  Stack,
+  TextField,
+} from '@mui/material'
 import { useForm } from 'react-hook-form'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { Link as RouterLink } from 'react-router'
 import { type CreateAnalysisDto, CreateAnalysisDtoSchema } from '@/lib/schemas/analysis.schema'
-import { cn } from '@/lib/utils'
 import { useCreateAnalysisMutation } from '../hooks/useCreateAnalysisMutation'
 import { useResumesForSelect } from '../hooks/useResumesForSelect'
 
@@ -25,86 +33,99 @@ export function AnalyzeForm() {
     analysisMutation.mutate(data)
   }
 
+  const { ref: resumeRef, ...resumeField } = register('resumeId')
+  const { ref: jobDescriptionRef, ...jobDescriptionField } = register('jobDescription')
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate aria-label="Analyze resume">
-      <div className="space-y-5">
-        {/* Resume select */}
-        <div className="space-y-1.5">
-          <Label htmlFor="resumeId">Resume</Label>
-          <select
-            id="resumeId"
-            className={cn(
-              'flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors',
-              'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-              'disabled:cursor-not-allowed disabled:opacity-50',
-              errors.resumeId && 'border-destructive',
-            )}
-            disabled={resumesLoading}
-            aria-invalid={!!errors.resumeId}
-            aria-describedby={errors.resumeId ? 'resumeId-error' : undefined}
-            {...register('resumeId')}
-          >
-            <option value="">{resumesLoading ? 'Loading resumes…' : 'Select a resume'}</option>
-            {resumes.map((r) => (
-              <option key={r.value} value={r.value}>
-                {r.label}
-              </option>
-            ))}
-          </select>
-          {errors.resumeId && (
-            <p id="resumeId-error" className="text-xs text-destructive" role="alert">
-              {errors.resumeId.message}
-            </p>
-          )}
-          {!resumesLoading && resumes.length === 0 && (
-            <p className="text-xs text-muted-foreground">
-              No completed resumes found.{' '}
-              <a href="/resume" className="underline hover:text-foreground">
-                Upload one first.
-              </a>
-            </p>
-          )}
-        </div>
+    <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate aria-label="Analyze resume">
+      <Stack spacing={2.5}>
+        <TextField
+          id="resumeId"
+          label="Resume"
+          select
+          disabled={resumesLoading}
+          error={Boolean(errors.resumeId)}
+          helperText={errors.resumeId?.message}
+          inputRef={resumeRef}
+          fullWidth
+          slotProps={{
+            select: {
+              native: true,
+            },
+            formHelperText: {
+              id: 'resumeId-error',
+              role: errors.resumeId ? 'alert' : undefined,
+            },
+          }}
+          {...resumeField}
+        >
+          <option value="">{resumesLoading ? 'Loading resumes...' : 'Select a resume'}</option>
+          {resumes.map((resume) => (
+            <option key={resume.value} value={resume.value}>
+              {resume.label}
+            </option>
+          ))}
+        </TextField>
 
-        {/* Job description */}
-        <div className="space-y-1.5">
-          <Label htmlFor="jobDescription">Job Description</Label>
-          <Textarea
-            id="jobDescription"
-            rows={8}
-            placeholder="Paste the full job description here (min 20 characters)…"
-            className={cn(errors.jobDescription && 'border-destructive')}
-            aria-invalid={!!errors.jobDescription}
-            aria-describedby={errors.jobDescription ? 'jobDescription-error' : undefined}
-            {...register('jobDescription')}
-          />
-          {errors.jobDescription && (
-            <p id="jobDescription-error" className="text-xs text-destructive" role="alert">
-              {errors.jobDescription.message}
-            </p>
-          )}
-        </div>
+        {!resumesLoading && resumes.length === 0 && (
+          <Alert severity="info">
+            No completed resumes found.{' '}
+            <MuiLink component={RouterLink} to="/resume" underline="hover" sx={{ fontWeight: 700 }}>
+              Upload one first.
+            </MuiLink>
+          </Alert>
+        )}
 
-        {/* Actions */}
-        <div className="flex items-center justify-end gap-3">
+        <TextField
+          id="jobDescription"
+          label="Job Description"
+          multiline
+          minRows={8}
+          placeholder="Paste the full job description here (min 20 characters)"
+          error={Boolean(errors.jobDescription)}
+          helperText={errors.jobDescription?.message}
+          inputRef={jobDescriptionRef}
+          fullWidth
+          slotProps={{
+            formHelperText: {
+              id: 'jobDescription-error',
+              role: errors.jobDescription ? 'alert' : undefined,
+            },
+          }}
+          {...jobDescriptionField}
+        />
+
+        <Stack
+          direction={{ xs: 'column-reverse', sm: 'row' }}
+          spacing={1.5}
+          sx={{ justifyContent: 'flex-end' }}
+        >
           <Button
             type="button"
-            variant="ghost"
-            size="sm"
+            variant="text"
             onClick={() => reset()}
             disabled={analysisMutation.isPending}
+            startIcon={<RestartAltRoundedIcon />}
           >
             Reset
           </Button>
           <Button
             type="submit"
+            variant="contained"
             disabled={analysisMutation.isPending || resumes.length === 0}
             aria-busy={analysisMutation.isPending}
+            startIcon={
+              analysisMutation.isPending ? (
+                <CircularProgress color="inherit" size={18} />
+              ) : (
+                <TroubleshootRoundedIcon />
+              )
+            }
           >
-            {analysisMutation.isPending ? 'Starting analysis…' : 'Analyze'}
+            {analysisMutation.isPending ? 'Starting analysis...' : 'Analyze'}
           </Button>
-        </div>
-      </div>
-    </form>
+        </Stack>
+      </Stack>
+    </Box>
   )
 }

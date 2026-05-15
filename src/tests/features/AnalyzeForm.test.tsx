@@ -115,8 +115,10 @@ describe('AnalyzeForm', () => {
     await user.click(screen.getByRole('button', { name: /analyze/i }))
 
     await waitFor(() => {
-      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      expect(screen.getByText(/analysis started/i)).toBeInTheDocument()
     })
+    expect(screen.queryByText(/resume id is required/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/at least 20/i)).not.toBeInTheDocument()
   })
 
   it('shows loading state while submitting', async () => {
