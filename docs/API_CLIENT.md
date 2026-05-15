@@ -60,4 +60,4 @@ The `useStreamJob` hook (`features/common/hooks/useStreamJob.ts`) subscribes to 
 
 ## Error Handling
 
-All API errors are normalized to `{ message: string; statusCode: number }` shape. Components display user-friendly messages via `sonner` toast notifications.
+All API errors are normalized to `{ message: string; statusCode: number }` shape. Components display user-friendly messages through the app toast bridge in `src/components/common/toast.ts`, which renders via the global MUI `AppSnackbar`.

@@ -3,10 +3,12 @@
 import { axe } from 'vitest-axe'
 import ErrorBoundary from '@/components/common/ErrorBoundary'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import Dashboard from '@/pages/Dashboard'
 import Login from '@/pages/Login'
 import NotFound from '@/pages/NotFound'
 import Register from '@/pages/Register'
-import { render } from '@/tests/test-utils'
+import Settings from '@/pages/Settings'
+import { render, screen } from '@/tests/test-utils'
 
 vi.mock('@sentry/react', () => ({ captureException: vi.fn() }))
 
@@ -36,6 +38,21 @@ describe('Accessibility', () => {
   describe('NotFound page', () => {
     it('has no axe violations', async () => {
       const { container } = render(<NotFound />)
+      await expectNoA11yViolations(container)
+    })
+  })
+
+  describe('Dashboard page', () => {
+    it('has no axe violations after stats load', async () => {
+      const { container } = render(<Dashboard />)
+      await screen.findByText('Workspace Activity')
+      await expectNoA11yViolations(container)
+    })
+  })
+
+  describe('Settings page', () => {
+    it('has no axe violations', async () => {
+      const { container } = render(<Settings />)
       await expectNoA11yViolations(container)
     })
   })

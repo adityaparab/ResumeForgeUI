@@ -70,6 +70,8 @@ export const WithNotificationsOpen: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: /notifications/i }))
-    await expect(canvas.getByRole('dialog', { name: /notifications/i })).toBeVisible()
+    await expect(
+      await within(document.body).findByRole('dialog', { name: /notifications/i }),
+    ).toBeVisible()
   },
 }

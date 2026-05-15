@@ -16,7 +16,7 @@ AI-powered resume analysis and optimization frontend built with React 19, TypeSc
 - **React 19** + TypeScript (strict mode)
 - **Redux Toolkit** — auth + UI state
 - **TanStack Query v5** — server state
-- **Tailwind CSS v4** + shadcn/ui components
+- **Material UI** + MUI X + Emotion
 - **Vite** + vite-plugin-pwa
 - **Vitest** — unit tests (100% coverage)
 - **Playwright** — E2E tests
@@ -78,7 +78,7 @@ The frontend integrates with the ResumeForge REST API (`/api/v1`):
 # Run unit tests
 yarn test
 
-# Run unit tests with coverage (100% enforced)
+# Run unit tests with coverage
 yarn test:coverage
 
 # Run E2E tests (requires API server running)
@@ -140,7 +140,7 @@ The project includes `netlify.toml` with redirect rules and security headers. Co
 ```
 src/
 ├── app/          # Redux store, providers, hooks
-├── components/   # Shared UI components (common, layout, ui)
+├── components/   # Shared app components (common, layout)
 ├── features/     # Feature modules (auth, resume, analysis, dashboard)
 ├── lib/          # API client, utilities, Zod schemas
 ├── pages/        # Route-level page components
@@ -151,80 +151,4 @@ tests/
 └── e2e/          # Playwright E2E tests
 ```
 
----
-
-_Previously generated Vite README content below:_
-
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Additional architecture and component notes live in `docs/`.

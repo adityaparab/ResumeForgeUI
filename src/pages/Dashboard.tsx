@@ -165,7 +165,9 @@ export default function Dashboard() {
                       <UploadFileRoundedIcon />
                     </Box>
                     <Box>
-                      <Typography variant="subtitle1">Upload Resume</Typography>
+                      <Typography component="p" variant="subtitle1">
+                        Upload Resume
+                      </Typography>
                       <Typography color="text.secondary" variant="body2">
                         Add a PDF or DOCX file
                       </Typography>
@@ -204,7 +206,9 @@ export default function Dashboard() {
                       <AnalyticsRoundedIcon />
                     </Box>
                     <Box>
-                      <Typography variant="subtitle1">Analyze Resume</Typography>
+                      <Typography component="p" variant="subtitle1">
+                        Analyze Resume
+                      </Typography>
                       <Typography color="text.secondary" variant="body2">
                         Compare against a job description
                       </Typography>

@@ -5,9 +5,8 @@ src/
 ├── app/                    # Redux store, TanStack Query client, providers
 ├── assets/                 # icons, images
 ├── components/
-│   ├── ui/                 # shadcn/ui + custom reusable (Button, Card, Table, etc.)
 │   ├── layout/             # Header, Sidebar, MainLayout
-│   └── common/             # Toast, ErrorBoundary, LoadingSpinner, Dropzone
+│   └── common/             # AppSnackbar, ThemeProvider, ErrorBoundary, LoadingSpinner
 ├── features/               # Feature slices (auth, dashboard, analysis, resume)
 │   ├── auth/
 │   ├── dashboard/
@@ -15,7 +14,7 @@ src/
 │   ├── resume/
 │   └── common/             # shared hooks, utils
 ├── hooks/                  # custom TanStack Query hooks
-├── lib/                    # utils, api client, zod schemas, cn utility
+├── lib/                    # API client and Zod schemas
 ├── pages/                  # Route components (Dashboard.tsx, Analysis.tsx, etc.)
 ├── routes/                 # React Router v7 route definitions
 ├── stores/                 # Redux slices (authSlice, uiSlice)
@@ -26,7 +25,7 @@ public/
 ├── favicon.svg
 └── manifest.json (PWA)
 tests/e2e/                  # Playwright tests
-storybook/                  # .stories.tsx
+.storybook/                 # Storybook config and app decorators
 ```
 
-All new components must be placed in the correct feature folder or `components/ui` if reusable.
+Material UI primitives are imported directly from MUI packages. New project-specific components should live in the owning feature folder, `components/common`, or `components/layout` depending on their scope.
