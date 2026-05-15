@@ -1,3 +1,4 @@
+import { Box } from '@mui/material'
 import type { Meta, StoryObj } from '@storybook/react'
 import { expect, fn, userEvent, within } from '@storybook/test'
 import type { ActiveJob } from '@/stores/uiSlice'
@@ -32,9 +33,9 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="min-h-32 bg-background text-foreground">
+      <Box sx={{ minHeight: 128, bgcolor: 'background.default', color: 'text.primary' }}>
         <Story />
-      </div>
+      </Box>
     ),
   ],
 } satisfies Meta<typeof Header>

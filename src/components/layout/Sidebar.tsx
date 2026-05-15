@@ -1,12 +1,31 @@
-import { BarChart3, FileText, LayoutDashboard, Settings } from 'lucide-react'
+import AnalyticsOutlinedIcon from '@mui/icons-material/AnalyticsOutlined'
+import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined'
+import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined'
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
+import WorkOutlineRoundedIcon from '@mui/icons-material/WorkOutlineRounded'
+import {
+  Avatar,
+  Box,
+  Divider,
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Stack,
+  Toolbar,
+  Typography,
+  useMediaQuery,
+} from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import { NavLink } from 'react-router'
-import { cn } from '@/lib/utils'
+import { drawerWidth } from './MainLayout'
 
 const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/analysis', icon: BarChart3, label: 'Analyze' },
-  { to: '/resume', icon: FileText, label: 'Resumes' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
+  { to: '/', icon: DashboardOutlinedIcon, label: 'Dashboard' },
+  { to: '/analysis', icon: AnalyticsOutlinedIcon, label: 'Analyze' },
+  { to: '/resume', icon: ArticleOutlinedIcon, label: 'Resumes' },
+  { to: '/settings', icon: SettingsOutlinedIcon, label: 'Settings' },
 ]
 
 interface SidebarProps {
@@ -15,50 +34,131 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  return (
-    <>
-      {/* Mobile overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/50 lg:hidden"
-          onClick={onClose}
-          aria-hidden="true"
-        />
-      )}
+  const theme = useTheme()
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'), { noSsr: true })
 
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          'fixed inset-y-0 left-0 z-30 flex w-64 flex-col border-r bg-background transition-transform duration-200 lg:static lg:translate-x-0',
-          isOpen ? 'translate-x-0' : '-translate-x-full',
-        )}
+  const drawerContent = (
+    <Box sx={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
+      <Toolbar sx={{ minHeight: { xs: 64, md: 68 }, px: 2.5 }}>
+        <Stack direction="row" spacing={1.5} sx={{ minWidth: 0, alignItems: 'center' }}>
+          <Avatar
+            variant="rounded"
+            sx={{ width: 38, height: 38, bgcolor: 'primary.main', color: 'primary.contrastText' }}
+          >
+            <WorkOutlineRoundedIcon fontSize="small" />
+          </Avatar>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="subtitle1" noWrap>
+              ResumeForge
+            </Typography>
+            <Typography variant="caption" color="text.secondary" noWrap>
+              AI resume operations
+            </Typography>
+          </Box>
+        </Stack>
+      </Toolbar>
+
+      <Divider />
+
+      <List component="nav" aria-label="Primary navigation" sx={{ flex: 1, p: 1.5 }}>
+        {navItems.map((item) => (
+          <ListItemButton
+            key={item.to}
+            component={NavLink}
+            to={item.to}
+            end={item.to === '/'}
+            onClick={isDesktop ? undefined : onClose}
+            sx={(muiTheme) => ({
+              mb: 0.5,
+              borderRadius: 1,
+              color: 'text.secondary',
+              '& .MuiListItemIcon-root': {
+                color: 'inherit',
+                minWidth: 38,
+              },
+              '&.active': {
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
+                boxShadow:
+                  muiTheme.palette.mode === 'dark'
+                    ? '0 10px 24px rgba(45, 212, 191, 0.16)'
+                    : '0 10px 24px rgba(0, 121, 107, 0.18)',
+                '&:hover': {
+                  bgcolor: 'primary.dark',
+                },
+              },
+            })}
+          >
+            <ListItemIcon>
+              <item.icon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary={item.label}
+              slotProps={{ primary: { sx: { fontWeight: 700 } } }}
+            />
+          </ListItemButton>
+        ))}
+      </List>
+
+      <Box sx={{ p: 2 }}>
+        <Box
+          sx={(muiTheme) => ({
+            border: `1px solid ${muiTheme.palette.divider}`,
+            borderRadius: 1,
+            bgcolor: muiTheme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.64)' : '#f8fafc',
+            p: 1.5,
+          })}
+        >
+          <Typography variant="caption" color="text.secondary">
+            Active workspace
+          </Typography>
+          <Typography variant="body2" noWrap sx={{ fontWeight: 700 }}>
+            Resume analysis
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
+  )
+
+  if (isDesktop) {
+    return (
+      <Drawer
+        variant="permanent"
+        open
+        slotProps={{
+          paper: {
+            sx: {
+              width: drawerWidth,
+              boxSizing: 'border-box',
+              borderRight: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
+            },
+          },
+        }}
       >
-        <div className="flex h-14 items-center border-b px-6 lg:hidden">
-          <span className="text-lg font-bold">ResumeForge</span>
-        </div>
+        {drawerContent}
+      </Drawer>
+    )
+  }
 
-        <nav className="flex-1 space-y-1 p-4">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              onClick={onClose}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                  isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-                )
-              }
-            >
-              <item.icon className="h-5 w-5" />
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-      </aside>
-    </>
+  return (
+    <Drawer
+      variant="temporary"
+      open={isOpen}
+      onClose={onClose}
+      ModalProps={{ keepMounted: true }}
+      slotProps={{
+        paper: {
+          sx: {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+            bgcolor: 'background.paper',
+          },
+        },
+      }}
+    >
+      {drawerContent}
+    </Drawer>
   )
 }

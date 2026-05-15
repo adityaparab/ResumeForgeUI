@@ -2,7 +2,6 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import { store } from '@/app/store'
-import ThemeProvider from '@/components/common/ThemeProvider'
 import Header from '@/components/layout/Header'
 import { THEME_KEY } from '@/constants'
 import { logout, setCredentials } from '@/stores/authSlice'
@@ -14,6 +13,8 @@ const mockUser = { id: 'user-1', email: 'user@example.com' }
 describe('Header', () => {
   afterEach(() => {
     document.documentElement.classList.remove('dark')
+    document.documentElement.removeAttribute('data-mui-color-scheme')
+    document.documentElement.style.colorScheme = ''
     store.dispatch(setTheme('system'))
     localStorage.removeItem(THEME_KEY)
   })
@@ -69,22 +70,21 @@ describe('Header', () => {
 
   it('toggles theme when dark mode button is clicked', async () => {
     const user = userEvent.setup()
-    // Start from light mode → toggles to dark
     store.dispatch(setTheme('light'))
-    render(
-      <>
-        <Header />
-        <ThemeProvider />
-      </>,
-    )
+    render(<Header />)
     expect(screen.getByRole('button', { name: /switch to dark mode/i })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /switch to dark mode/i }))
-    expect(document.documentElement).toHaveClass('dark')
-    expect(localStorage.getItem(THEME_KEY)).toBe('dark')
-    // Now in dark mode → toggles to light
-    await user.click(screen.getByRole('button', { name: /switch to light mode/i }))
-    expect(screen.getByRole('button', { name: /switch to dark mode/i })).toBeInTheDocument()
+    await vi.waitFor(() => {
+      expect(document.documentElement.dataset.muiColorScheme).toBe('dark')
+    })
     expect(document.documentElement).not.toHaveClass('dark')
+    expect(localStorage.getItem(THEME_KEY)).toBe('dark')
+
+    await user.click(screen.getByRole('button', { name: /switch to light mode/i }))
+    await vi.waitFor(() => {
+      expect(screen.getByRole('button', { name: /switch to dark mode/i })).toBeInTheDocument()
+      expect(document.documentElement.dataset.muiColorScheme).toBe('light')
+    })
     expect(localStorage.getItem(THEME_KEY)).toBe('light')
   })
 })

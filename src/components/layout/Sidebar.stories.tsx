@@ -1,3 +1,4 @@
+import { Box } from '@mui/material'
 import type { Meta, StoryObj } from '@storybook/react'
 import { fn } from '@storybook/test'
 import Sidebar from './Sidebar'
@@ -18,9 +19,9 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="min-h-screen bg-background text-foreground">
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary' }}>
         <Story />
-      </div>
+      </Box>
     ),
   ],
 } satisfies Meta<typeof Sidebar>
