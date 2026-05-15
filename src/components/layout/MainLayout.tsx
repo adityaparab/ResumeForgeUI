@@ -1,3 +1,4 @@
+import { Box, Flex } from '@chakra-ui/react'
 import { useState } from 'react'
 import { Outlet } from 'react-router'
 import Header from './Header'
@@ -7,14 +8,14 @@ export default function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <Flex minH="100dvh" bg="bg">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex flex-1 flex-col">
+      <Flex flex="1" direction="column" minW={0}>
         <Header onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
-        <main className="flex-1 p-4 lg:p-6">
+        <Box as="main" flex="1" p={{ base: 4, lg: 6 }}>
           <Outlet />
-        </main>
-      </div>
-    </div>
+        </Box>
+      </Flex>
+    </Flex>
   )
 }

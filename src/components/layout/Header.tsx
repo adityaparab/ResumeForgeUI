@@ -1,6 +1,6 @@
-import { LogOut, Moon, Sun } from 'lucide-react'
+import { Box, HStack, IconButton, Text } from '@chakra-ui/react'
+import { LogOut, Menu, Moon, Sun } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
-import { Button } from '@/components/ui/button'
 import { useLogoutMutation } from '@/features/auth/hooks/useAuthMutations'
 import { NotificationBell } from '@/features/common/components/NotificationBell'
 import { selectCurrentUser } from '@/stores/authSlice'
@@ -21,57 +21,69 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 lg:px-6">
-      <button
-        type="button"
-        className="lg:hidden"
-        onClick={onToggleSidebar}
-        aria-label="Toggle sidebar"
-      >
-        <svg
-          className="h-6 w-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 6h16M4 12h16M4 18h16"
-          />
-        </svg>
-      </button>
-
-      <div className="flex-1">
-        <span className="text-lg font-bold">ResumeForge</span>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Button
+    <Box
+      as="header"
+      position="sticky"
+      top="0"
+      zIndex="sticky"
+      h="14"
+      borderBottomWidth="1px"
+      borderColor="border.subtle"
+      bg="bg"
+      px={{ base: 4, lg: 6 }}
+    >
+      <HStack h="full" gap={4} justify="space-between">
+        {/* Hamburger (mobile only) */}
+        <IconButton
+          aria-label="Toggle sidebar"
           variant="ghost"
-          size="icon"
-          onClick={toggleTheme}
-          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          size="sm"
+          display={{ base: 'flex', lg: 'none' }}
+          onClick={onToggleSidebar}
         >
-          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-        </Button>
+          <Menu size={20} />
+        </IconButton>
 
-        <NotificationBell />
+        {/* Brand name */}
+        <Text fontSize="lg" fontWeight="800" color="fg" letterSpacing="tight">
+          ResumeForge
+        </Text>
 
-        <span className="text-muted-foreground hidden text-sm md:inline">{user?.email}</span>
+        {/* Right actions */}
+        <HStack gap={1} ml="auto">
+          <IconButton
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            variant="ghost"
+            size="sm"
+            onClick={toggleTheme}
+          >
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          </IconButton>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => logoutMutation.mutate()}
-          disabled={logoutMutation.isPending}
-          aria-label="Sign out"
-        >
-          <LogOut className="h-5 w-5" />
-        </Button>
-      </div>
-    </header>
+          <NotificationBell />
+
+          <Text
+            fontSize="sm"
+            color="fg.muted"
+            display={{ base: 'none', md: 'block' }}
+            maxW="180px"
+            truncate
+          >
+            {user?.email}
+          </Text>
+
+          <IconButton
+            aria-label="Sign out"
+            variant="ghost"
+            size="sm"
+            colorPalette="red"
+            loading={logoutMutation.isPending}
+            onClick={() => logoutMutation.mutate()}
+          >
+            <LogOut size={18} />
+          </IconButton>
+        </HStack>
+      </HStack>
+    </Box>
   )
 }
