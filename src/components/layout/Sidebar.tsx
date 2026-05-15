@@ -6,7 +6,6 @@ import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
-import WorkOutlineRoundedIcon from '@mui/icons-material/WorkOutlineRounded'
 import {
   Avatar,
   Box,
@@ -20,7 +19,6 @@ import {
   Menu,
   MenuItem,
   Stack,
-  Toolbar,
   Tooltip,
   Typography,
   useMediaQuery,
@@ -69,63 +67,50 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
   const userInitials = user?.email ? getUserInitials(user.email) : '?'
 
   const drawerContent = (
-    <Box sx={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
-      {/* Brand header */}
-      <Toolbar
+    <Box
+      sx={{
+        display: 'flex',
+        height: '100%',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
+      {/* AppBar-height spacer — on desktop contains the collapse/expand toggle */}
+      <Box
         sx={{
           minHeight: { xs: 64, md: 68 },
-          px: 2,
-          justifyContent: collapsed ? 'center' : 'flex-start',
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: collapsed ? 'center' : 'flex-end',
+          px: 1,
         }}
       >
-        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', width: '100%' }}>
-          <Avatar
-            variant="rounded"
-            sx={{
-              width: 36,
-              height: 36,
-              flexShrink: 0,
-              bgcolor: 'primary.main',
-              color: 'primary.contrastText',
-            }}
-          >
-            <WorkOutlineRoundedIcon fontSize="small" />
-          </Avatar>
-
-          {!collapsed && (
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="subtitle1" noWrap>
-                ResumeForge
-              </Typography>
-              <Typography variant="caption" color="text.secondary" noWrap>
-                AI resume operations
-              </Typography>
-            </Box>
-          )}
-
-          {isDesktop && (
-            <Tooltip title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
-              <IconButton
-                size="small"
-                onClick={onToggleCollapse}
-                aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                sx={{ ml: collapsed ? 0 : 'auto' }}
-              >
-                {collapsed ? (
-                  <ChevronRightRoundedIcon fontSize="small" />
-                ) : (
-                  <ChevronLeftRoundedIcon fontSize="small" />
-                )}
-              </IconButton>
-            </Tooltip>
-          )}
-        </Stack>
-      </Toolbar>
+        {isDesktop && (
+          <Tooltip title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+            <IconButton
+              size="small"
+              onClick={onToggleCollapse}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {collapsed ? (
+                <ChevronRightRoundedIcon fontSize="small" />
+              ) : (
+                <ChevronLeftRoundedIcon fontSize="small" />
+              )}
+            </IconButton>
+          </Tooltip>
+        )}
+      </Box>
 
       <Divider />
 
       {/* Navigation */}
-      <List component="nav" aria-label="Primary navigation" sx={{ flex: 1, p: 1 }}>
+      <List
+        component="nav"
+        aria-label="Primary navigation"
+        sx={{ flex: 1, p: 1, overflowY: 'auto', overflowX: 'hidden' }}
+      >
         {navItems.map((item) => (
           <Tooltip
             key={item.to}
@@ -180,51 +165,77 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
       <Divider />
 
       {/* Bottom: user avatar + settings */}
-      <Box sx={{ p: 1.5 }}>
-        <Stack
-          direction="row"
-          spacing={1}
-          sx={{ alignItems: 'center', justifyContent: collapsed ? 'center' : 'space-between' }}
-        >
-          <Tooltip title={user?.email ?? 'User'} placement="right">
-            <Avatar
-              sx={{
-                width: 34,
-                height: 34,
-                bgcolor: 'primary.main',
-                color: 'primary.contrastText',
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                cursor: 'default',
-                flexShrink: 0,
-              }}
-            >
-              {userInitials}
-            </Avatar>
-          </Tooltip>
-
-          {!collapsed && user?.email && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              noWrap
-              sx={{ flex: 1, minWidth: 0 }}
-            >
-              {user.email}
-            </Typography>
-          )}
-
-          <Tooltip title="Settings">
-            <IconButton
-              size="small"
-              onClick={(e) => setSettingsAnchor(e.currentTarget)}
-              aria-label="Settings menu"
-              aria-haspopup="menu"
-            >
-              <SettingsOutlinedIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Stack>
+      <Box sx={{ flexShrink: 0, p: collapsed ? 1 : 1.5 }}>
+        {collapsed ? (
+          /* Vertical stack when collapsed — fits comfortably in 64 px */
+          <Stack direction="column" spacing={0.75} sx={{ alignItems: 'center' }}>
+            <Tooltip title={user?.email ?? 'User'} placement="right">
+              <Avatar
+                sx={{
+                  width: 32,
+                  height: 32,
+                  bgcolor: 'primary.main',
+                  color: 'primary.contrastText',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  cursor: 'default',
+                }}
+              >
+                {userInitials}
+              </Avatar>
+            </Tooltip>
+            <Tooltip title="Settings" placement="right">
+              <IconButton
+                size="small"
+                onClick={(e) => setSettingsAnchor(e.currentTarget)}
+                aria-label="Settings menu"
+                aria-haspopup="menu"
+              >
+                <SettingsOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        ) : (
+          /* Horizontal row when expanded */
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+            <Tooltip title={user?.email ?? 'User'}>
+              <Avatar
+                sx={{
+                  width: 34,
+                  height: 34,
+                  bgcolor: 'primary.main',
+                  color: 'primary.contrastText',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  cursor: 'default',
+                  flexShrink: 0,
+                }}
+              >
+                {userInitials}
+              </Avatar>
+            </Tooltip>
+            {user?.email && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                noWrap
+                sx={{ flex: 1, minWidth: 0 }}
+              >
+                {user.email}
+              </Typography>
+            )}
+            <Tooltip title="Settings">
+              <IconButton
+                size="small"
+                onClick={(e) => setSettingsAnchor(e.currentTarget)}
+                aria-label="Settings menu"
+                aria-haspopup="menu"
+              >
+                <SettingsOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        )}
       </Box>
 
       {/* Settings menu */}

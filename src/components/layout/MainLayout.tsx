@@ -1,4 +1,4 @@
-import { Box, Toolbar } from '@mui/material'
+import { Box } from '@mui/material'
 import { useState } from 'react'
 import { Outlet } from 'react-router'
 import Header from './Header'
@@ -31,7 +31,8 @@ export default function MainLayout() {
           transition: 'margin-left 0.2s ease',
         }}
       >
-        <Toolbar />
+        {/* Spacer matching the fixed AppBar height */}
+        <Box sx={{ minHeight: { xs: 64, md: 68 } }} />
         <Box sx={{ mx: 'auto', width: '100%', maxWidth: 1440 }}>
           <Outlet />
         </Box>
