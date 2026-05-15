@@ -1,6 +1,5 @@
-import { Loader2 } from 'lucide-react'
+import { Box, Flex, Heading, HStack, Spinner, Text, VStack } from '@chakra-ui/react'
 import { useEffect, useRef } from 'react'
-import { cn } from '@/lib/utils'
 import type { StreamStatus } from '../hooks/useStreamJob'
 
 interface StreamViewerProps {
@@ -10,7 +9,6 @@ interface StreamViewerProps {
   fullText: string
   error: string | null
   onDone?: () => void
-  className?: string
 }
 
 const STATUS_LABELS: Record<StreamStatus, string> = {
@@ -21,12 +19,12 @@ const STATUS_LABELS: Record<StreamStatus, string> = {
   failed: 'Failed',
 }
 
-const STATUS_DOT_CLASSES: Record<StreamStatus, string> = {
-  idle: 'bg-muted-foreground',
-  connecting: 'bg-yellow-500 animate-pulse',
-  streaming: 'bg-blue-500 animate-pulse',
-  done: 'bg-green-500',
-  failed: 'bg-destructive',
+const STATUS_DOT_COLORS: Record<StreamStatus, string> = {
+  idle: 'fg.muted',
+  connecting: 'yellow.500',
+  streaming: 'blue.500',
+  done: 'green.500',
+  failed: 'red.500',
 }
 
 export function StreamViewer({
@@ -36,11 +34,9 @@ export function StreamViewer({
   fullText,
   error,
   onDone,
-  className,
 }: StreamViewerProps) {
   const outputRef = useRef<HTMLDivElement>(null)
 
-  // Auto-scroll as text comes in
   useEffect(() => {
     if (status === 'streaming' && fullText.length > 0) {
       const output = outputRef.current as HTMLDivElement
@@ -48,7 +44,6 @@ export function StreamViewer({
     }
   }, [status, fullText])
 
-  // Trigger onDone callback
   useEffect(() => {
     if (status === 'done') {
       onDone?.()
@@ -56,51 +51,84 @@ export function StreamViewer({
   }, [status, onDone])
 
   return (
-    <div className={cn('space-y-6', className)}>
+    <VStack gap={6} align="stretch">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-          {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
-        </div>
-        <div className="flex shrink-0 items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm">
-          <span
-            className={cn('size-2 rounded-full', STATUS_DOT_CLASSES[status])}
-            aria-hidden="true"
-          />
-          <span className="font-medium">{STATUS_LABELS[status]}</span>
-          {(status === 'connecting' || status === 'streaming') && (
-            <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
+      <Flex justify="space-between" align="flex-start" gap={4} wrap="wrap">
+        <VStack gap={0.5} align="flex-start">
+          <Heading as="h1" size="xl" color="fg">
+            {title}
+          </Heading>
+          {subtitle && (
+            <Text fontSize="sm" color="fg.muted">
+              {subtitle}
+            </Text>
           )}
-        </div>
-      </div>
+        </VStack>
 
-      {/* Error state */}
+        {/* Status badge */}
+        <HStack
+          gap={2}
+          px={3}
+          py={1.5}
+          borderRadius="full"
+          borderWidth="1px"
+          borderColor="border.subtle"
+          bg="bg.subtle"
+          flexShrink={0}
+        >
+          <Box w={2} h={2} borderRadius="full" bg={STATUS_DOT_COLORS[status]} aria-hidden="true" />
+          <Text fontSize="sm" fontWeight="500" color="fg">
+            {STATUS_LABELS[status]}
+          </Text>
+          {(status === 'connecting' || status === 'streaming') && (
+            <Spinner size="xs" color="fg.muted" />
+          )}
+        </HStack>
+      </Flex>
+
+      {/* Error */}
       {status === 'failed' && error && (
-        <div
-          className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        <Box
+          px={4}
+          py={3}
+          borderRadius="lg"
+          bg="red.subtle"
+          borderWidth="1px"
+          borderColor="red.200"
           role="alert"
         >
-          {error}
-        </div>
+          <Text fontSize="sm" color="red.600">
+            {error}
+          </Text>
+        </Box>
       )}
 
-      {/* Stream output */}
-      <div
+      {/* Output */}
+      <Box
         ref={outputRef}
-        className="relative max-h-[calc(100vh-18rem)] min-h-48 overflow-y-auto rounded-xl border border-border bg-card p-6 font-mono text-sm leading-relaxed"
+        maxH="calc(100vh - 18rem)"
+        minH="48"
+        overflowY="auto"
+        borderRadius="xl"
+        borderWidth="1px"
+        borderColor="border.subtle"
+        bg="bg.subtle"
+        p={6}
+        fontFamily="mono"
+        fontSize="sm"
+        lineHeight="relaxed"
         aria-label="Stream output"
         aria-live="polite"
         role="log"
       >
         {fullText ? (
-          <pre className="whitespace-pre-wrap break-words text-foreground">{fullText}</pre>
+          <Box as="pre" whiteSpace="pre-wrap" wordBreak="break-word" color="fg">
+            {fullText}
+          </Box>
         ) : (
-          <p className="text-muted-foreground">
-            {status === 'failed' ? 'No output.' : 'Waiting for output…'}
-          </p>
+          <Text color="fg.muted">{status === 'failed' ? 'No output.' : 'Waiting for output…'}</Text>
         )}
-      </div>
-    </div>
+      </Box>
+    </VStack>
   )
 }

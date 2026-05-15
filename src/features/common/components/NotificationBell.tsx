@@ -1,6 +1,6 @@
+import { Box, IconButton } from '@chakra-ui/react'
 import { Bell } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { useNotifications } from '../hooks/useNotifications'
 import { NotificationDropdown } from './NotificationDropdown'
 
@@ -42,25 +42,42 @@ export function NotificationBell() {
   }, [isOpen])
 
   return (
-    <div ref={rootRef} className="relative">
-      <Button
-        variant="ghost"
-        size="icon"
-        aria-label="Notifications"
-        aria-haspopup="dialog"
-        aria-expanded={isOpen}
-        onClick={() => setIsOpen((current) => !current)}
-      >
-        <Bell className="h-5 w-5" />
+    <Box ref={rootRef} position="relative">
+      <Box position="relative" display="inline-flex">
+        <IconButton
+          aria-label="Notifications"
+          aria-haspopup="dialog"
+          aria-expanded={isOpen}
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsOpen((current) => !current)}
+        >
+          <Bell size={18} />
+        </IconButton>
         {unreadCount > 0 && (
-          <span
-            className="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 py-0.5 font-semibold text-[0.65rem] text-destructive-foreground leading-none"
+          <Box
+            position="absolute"
+            top="-1"
+            right="-1"
+            minW="5"
+            h="5"
+            borderRadius="full"
+            bg="red.500"
+            color="white"
+            fontSize="10px"
+            fontWeight="700"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            px={1}
+            lineHeight="1"
+            pointerEvents="none"
             aria-live="polite"
           >
             {unreadCount}
-          </span>
+          </Box>
         )}
-      </Button>
+      </Box>
 
       {isOpen && (
         <NotificationDropdown
@@ -75,6 +92,6 @@ export function NotificationBell() {
           onClose={() => setIsOpen(false)}
         />
       )}
-    </div>
+    </Box>
   )
 }
