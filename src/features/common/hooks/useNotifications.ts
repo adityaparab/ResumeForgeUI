@@ -1,4 +1,4 @@
-import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
+﻿import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { toast } from '@/components/common/toast'
@@ -7,6 +7,7 @@ import type { AnalysisStatusResponse } from '@/lib/schemas/analysis.schema'
 import type { ResumeStatusResponse } from '@/lib/schemas/resume.schema'
 import {
   type ActiveJob,
+  addActiveJob,
   clearCompletedJobs,
   type JobStatus,
   markAllJobNotificationsRead,
@@ -34,6 +35,9 @@ const STATUS_MAP = {
   failed: 'failed',
 } satisfies Record<ApiStatus, JobStatus>
 
+// API statuses that represent an active (in-flight) job
+const ACTIVE_API_STATUSES = new Set<string>(['queued', 'processing'])
+
 const JOB_KIND_LABELS = {
   analysis: 'Analysis',
   'resume-upload': 'Resume extraction',
@@ -47,7 +51,7 @@ export function isTerminalJob(status: JobStatus) {
   return status === 'completed' || status === 'failed'
 }
 
-function normalizeStatus(status: ApiStatus) {
+function normalizeStatus(status: ApiStatus): JobStatus {
   return STATUS_MAP[status]
 }
 
@@ -85,33 +89,70 @@ export function useNotifications() {
   const activeJobs = useAppSelector(selectActiveJobs)
   const unreadCount = useAppSelector(selectUnreadJobCount)
 
+  // Any stream in connecting or streaming state → badge stays visible
+  const hasActiveStreams = useAppSelector((state) =>
+    Object.values(state.stream.streams).some(
+      (s) => s.status === 'connecting' || s.status === 'streaming',
+    ),
+  )
+
   const jobs = useMemo(() => sortNewestFirst(activeJobs), [activeJobs])
   const pollingJobs = useMemo(
     () => activeJobs.filter((job) => isOngoingJob(job.status)),
     [activeJobs],
   )
+  const ongoingCount = pollingJobs.length
 
-  const { data: resumeList } = useQuery({
-    queryKey: ['resumes'],
+  // Fetch lists ONCE on mount (no refetchInterval) to detect pre-existing active jobs.
+  // staleTime: Infinity prevents automatic background re-fetches.
+  const { data: resumeListData } = useQuery({
+    queryKey: ['resumes', 1, 20],
     queryFn: () => resumeApi.list(),
-    refetchInterval: POLLING_INTERVAL_MS,
-    staleTime: POLLING_INTERVAL_MS / 2,
+    staleTime: Infinity,
   })
-  const { data: analysisList } = useQuery({
-    queryKey: ['analyses'],
+
+  const { data: analysisListData } = useQuery({
+    queryKey: ['analyses', 1, 20],
     queryFn: () => analysisApi.list(),
-    refetchInterval: POLLING_INTERVAL_MS,
-    staleTime: POLLING_INTERVAL_MS / 2,
+    staleTime: Infinity,
   })
 
-  const ACTIVE_STATUSES = useMemo(() => new Set(['processing', 'queued', 'pending']), [])
+  // Seed active jobs discovered in the list into Redux so statusQueries picks them up.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: activeJobs in deps causes loop; existingIds check is idempotent
+  useEffect(() => {
+    if (!resumeListData) return
+    const existingIds = new Set(activeJobs.map((j) => j.id))
+    for (const resume of resumeListData.data) {
+      if (!ACTIVE_API_STATUSES.has(resume.status) || existingIds.has(resume.id)) continue
+      dispatch(
+        addActiveJob({
+          id: resume.id,
+          type: 'resume-upload',
+          status: normalizeStatus(resume.status as ApiStatus),
+          label: resume.originalName,
+          createdAt: resume.createdAt,
+        }),
+      )
+    }
+  }, [resumeListData, dispatch])
 
-  const hasActiveItems = useMemo(() => {
-    return (
-      (resumeList?.data ?? []).some((r) => ACTIVE_STATUSES.has(r.status)) ||
-      (analysisList?.data ?? []).some((a) => ACTIVE_STATUSES.has(a.status))
-    )
-  }, [resumeList, analysisList, ACTIVE_STATUSES])
+  // biome-ignore lint/correctness/useExhaustiveDependencies: activeJobs in deps causes loop; existingIds check is idempotent
+  useEffect(() => {
+    if (!analysisListData) return
+    const existingIds = new Set(activeJobs.map((j) => j.id))
+    for (const analysis of analysisListData.data) {
+      if (!ACTIVE_API_STATUSES.has(analysis.status) || existingIds.has(analysis.id)) continue
+      dispatch(
+        addActiveJob({
+          id: analysis.id,
+          type: 'analysis',
+          status: normalizeStatus(analysis.status as ApiStatus),
+          label: analysis.title ?? analysis.jobDescription.slice(0, 60),
+          createdAt: analysis.createdAt,
+        }),
+      )
+    }
+  }, [analysisListData, dispatch])
 
   const statusQueries = useQueries({
     queries: pollingJobs.map((job) => ({
@@ -167,8 +208,9 @@ export function useNotifications() {
   return {
     jobs,
     unreadCount,
-    hasActiveItems,
-    ongoingCount: jobs.filter((job) => isOngoingJob(job.status)).length,
+    // Badge shows while any job is still processing OR any stream is live
+    hasActiveItems: ongoingCount > 0 || hasActiveStreams,
+    ongoingCount,
     completedCount: jobs.filter((job) => isTerminalJob(job.status)).length,
     markAllAsRead,
     markAsRead,

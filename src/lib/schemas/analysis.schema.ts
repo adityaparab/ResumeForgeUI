@@ -59,6 +59,7 @@ export const CandidateAssessmentSchema = z.object({
   updatedSkillsSection: UpdatedSkillsSectionSchema,
   projectedScoreAfterChanges: z.string(),
   nextSteps: z.array(z.string()),
+  title: z.string().optional(),
 })
 
 export type CandidateAssessment = z.infer<typeof CandidateAssessmentSchema>
@@ -73,7 +74,6 @@ export type AnalysisResult = z.infer<typeof AnalysisResultSchema>
 export const AnalysisSchema = z.object({
   id: z.string(),
   _id: z.string().optional(),
-  title: z.string().optional(),
   userId: z.string(),
   resumeId: z.string(),
   jobDescription: z.string(),

@@ -11,6 +11,7 @@ import {
   type PathSegment,
 } from '@/features/resume/components/EditableStructuredContent'
 import { resumeApi } from '@/lib/api-client'
+import { toSpinalCase } from '@/lib/utils'
 
 const STATUS_CHIP: Record<string, ChipProps['color']> = {
   completed: 'success',
@@ -38,9 +39,9 @@ export default function ResumeDetail() {
   })
 
   const updateResumeMutation = useMutation({
-    mutationFn: (fields: Record<string, unknown>) => {
+    mutationFn: ({ path, value }: { path: string; value: unknown }) => {
       if (!resumeId) throw new Error('Missing resume ID')
-      return resumeApi.updateResumeFields(resumeId, fields)
+      return resumeApi.updateResumeFields(resumeId, path, value)
     },
     onSuccess: (updatedResume) => {
       queryClient.setQueryData(['resume', resumeId], updatedResume)
@@ -53,7 +54,7 @@ export default function ResumeDetail() {
 
   const handleSaveField = async (path: PathSegment[], value: unknown): Promise<void> => {
     const dotPath = path.map(String).join('.')
-    await updateResumeMutation.mutateAsync({ [dotPath]: value })
+    await updateResumeMutation.mutateAsync({ path: dotPath, value })
   }
 
   const handleDownload = async () => {
@@ -64,7 +65,9 @@ export default function ResumeDetail() {
       const a = document.createElement('a')
       a.href = url
       /* v8 ignore next */
-      a.download = resume?.originalName ?? 'resume.pdf'
+      const personName = resume?.structuredContent?.basics?.name ?? 'resume'
+      /* v8 ignore next */
+      a.download = `${toSpinalCase(personName)}.pdf`
       a.click()
       URL.revokeObjectURL(url)
     } catch {

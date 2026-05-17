@@ -224,11 +224,7 @@ export default function AnalysisList() {
                     <TableRow hover key={analysis.id}>
                       <TableCell>
                         {analysis.status === 'completed' ? (
-                          <Typography variant="body2">
-                            {analysis.title ??
-                              (analysis.jobDescription.split('\n')[0]?.slice(0, 60) ||
-                                shortId(analysis.id))}
-                          </Typography>
+                          <Typography variant="body2">{shortId(analysis.id)}</Typography>
                         ) : (
                           <Typography
                             color="text.secondary"

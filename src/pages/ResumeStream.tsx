@@ -30,7 +30,7 @@ export default function ResumeStream() {
 
   const jobId = statusData?.jobId
   const {
-    status,
+    status: hookStatus,
     fullText: hookFullText,
     error,
   } = useStreamJob({
@@ -39,6 +39,9 @@ export default function ResumeStream() {
   })
   const streamEntry = useAppSelector(selectStream(jobId))
   const fullText = streamEntry?.fullText ?? hookFullText
+  // Use Redux stream status as source of truth (it's updated synchronously via store.dispatch)
+  // Fall back to hook's local status after the stream clears (done/failed)
+  const status = streamEntry?.status ?? hookStatus
 
   const handleDone = useCallback(() => {
     /* v8 ignore next */

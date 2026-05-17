@@ -71,6 +71,7 @@ export function useStreamJob({ jobId, enabled = true }: UseStreamJobOptions): Us
     setError(null)
     fullTextRef.current = ''
     setFullText('')
+    store.dispatch(updateStream({ jobId, fullText: '', status: 'connecting' }))
 
     const es = new EventSource(url)
     esRef.current = es

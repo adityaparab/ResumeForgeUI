@@ -29,6 +29,7 @@ import { useNavigate, useParams } from 'react-router'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { toast } from '@/components/common/toast'
 import { analysisApi } from '@/lib/api-client'
+import { toSpinalCase } from '@/lib/utils'
 
 interface NormalizedAnalysisReport {
   score: number
@@ -240,7 +241,11 @@ export default function AnalysisResult() {
       const a = document.createElement('a')
       a.href = url
       /* v8 ignore next */
-      a.download = `resume-optimized.pdf`
+      const personName = analysis.result?.updatedResume?.basics?.name ?? 'resume'
+      /* v8 ignore next */
+      const analysisTitle = analysis.result?.analysisReport.title ?? 'analysis'
+      /* v8 ignore next */
+      a.download = `${toSpinalCase(personName)}_${toSpinalCase(analysisTitle)}.pdf`
       a.click()
       URL.revokeObjectURL(url)
     } catch {
@@ -272,7 +277,7 @@ export default function AnalysisResult() {
         >
           <Box>
             <Typography component="h1" variant="h4">
-              {analysis.title ??
+              {analysis.result?.analysisReport.title ??
                 (analysis.jobDescription.split('\n')[0]?.slice(0, 80) || 'Analysis Result')}
             </Typography>
             <Typography color="text.secondary" sx={{ mt: 0.75 }} variant="body2">
