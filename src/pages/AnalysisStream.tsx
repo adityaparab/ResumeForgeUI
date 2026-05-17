@@ -3,11 +3,13 @@ import { Alert, Paper, Stack } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
 import { useCallback, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router'
+import { useAppSelector } from '@/app/hooks'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { toast } from '@/components/common/toast'
 import { StreamViewer } from '@/features/common/components/StreamViewer'
 import { useStreamJob } from '@/features/common/hooks/useStreamJob'
 import { analysisApi } from '@/lib/api-client'
+import { selectStream } from '@/stores/streamSlice'
 
 export default function AnalysisStream() {
   const { analysisId } = useParams<{ analysisId: string }>()
@@ -26,10 +28,17 @@ export default function AnalysisStream() {
     enabled: !!analysisId,
   })
 
-  const { status, fullText, error } = useStreamJob({
-    jobId: statusData?.jobId,
-    enabled: !!statusData?.jobId,
+  const jobId = statusData?.jobId
+  const {
+    status,
+    fullText: hookFullText,
+    error,
+  } = useStreamJob({
+    jobId,
+    enabled: !!jobId,
   })
+  const streamEntry = useAppSelector(selectStream(jobId))
+  const fullText = streamEntry?.fullText ?? hookFullText
 
   const handleDone = useCallback(() => {
     /* v8 ignore next */

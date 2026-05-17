@@ -176,6 +176,9 @@ export const resumeApi = {
   updateStructuredContent: (id: string, structuredContent: Resume['structuredContent']) =>
     apiClient.patch<Resume>(`/resume/${id}`, { structuredContent }).then((r) => r.data),
 
+  updateResumeFields: (id: string, fields: Record<string, unknown>) =>
+    apiClient.patch<Resume>(`/resume/${id}`, fields).then((r) => r.data),
+
   getStatus: (id: string) =>
     apiClient.get<ResumeStatusResponse>(`/resume/status/${id}`).then((r) => r.data),
 
@@ -183,6 +186,11 @@ export const resumeApi = {
 
   download: (id: string) =>
     apiClient.get<Blob>(`/resume/${id}/download`, { responseType: 'blob' }).then((r) => r.data),
+
+  createFromContent: (originalName: string, structuredContent: Record<string, unknown>) =>
+    apiClient
+      .post<{ id: string; status: string }>('/resume', { originalName, structuredContent })
+      .then((r) => r.data),
 }
 
 // ===================== Analysis API =====================
@@ -200,6 +208,14 @@ export const analysisApi = {
     apiClient.get<AnalysisStatusResponse>(`/analysis/status/${id}`).then((r) => r.data),
 
   delete: (id: string) => apiClient.delete(`/analysis/${id}`),
+
+  download: (analysisId: string, resumeId: string) =>
+    apiClient
+      .get<Blob>(`/analysis/${analysisId}/download`, {
+        params: { resumeId },
+        responseType: 'blob',
+      })
+      .then((r) => r.data),
 }
 
 export default apiClient

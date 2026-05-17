@@ -1,4 +1,4 @@
-import { useQueries, useQueryClient } from '@tanstack/react-query'
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { toast } from '@/components/common/toast'
@@ -91,6 +91,28 @@ export function useNotifications() {
     [activeJobs],
   )
 
+  const { data: resumeList } = useQuery({
+    queryKey: ['resumes'],
+    queryFn: () => resumeApi.list(),
+    refetchInterval: POLLING_INTERVAL_MS,
+    staleTime: POLLING_INTERVAL_MS / 2,
+  })
+  const { data: analysisList } = useQuery({
+    queryKey: ['analyses'],
+    queryFn: () => analysisApi.list(),
+    refetchInterval: POLLING_INTERVAL_MS,
+    staleTime: POLLING_INTERVAL_MS / 2,
+  })
+
+  const ACTIVE_STATUSES = useMemo(() => new Set(['processing', 'queued', 'pending']), [])
+
+  const hasActiveItems = useMemo(() => {
+    return (
+      (resumeList?.data ?? []).some((r) => ACTIVE_STATUSES.has(r.status)) ||
+      (analysisList?.data ?? []).some((a) => ACTIVE_STATUSES.has(a.status))
+    )
+  }, [resumeList, analysisList, ACTIVE_STATUSES])
+
   const statusQueries = useQueries({
     queries: pollingJobs.map((job) => ({
       queryKey: ['notification-status', job.type, job.id],
@@ -145,6 +167,7 @@ export function useNotifications() {
   return {
     jobs,
     unreadCount,
+    hasActiveItems,
     ongoingCount: jobs.filter((job) => isOngoingJob(job.status)).length,
     completedCount: jobs.filter((job) => isTerminalJob(job.status)).length,
     markAllAsRead,

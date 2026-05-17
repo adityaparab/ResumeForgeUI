@@ -28,7 +28,7 @@ export default function AppSnackbar() {
       open={open}
       autoHideDuration={autoHideDuration}
       onClose={handleClose}
-      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
     >
       <Alert
         severity={currentToast?.severity ?? 'info'}

@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { describe, expect, it } from 'vitest'
 import authReducer from '@/stores/authSlice'
+import streamReducer from '@/stores/streamSlice'
 import uiReducer, {
   addActiveJob,
   clearCompletedJobs,
@@ -18,7 +19,7 @@ import uiReducer, {
 } from '@/stores/uiSlice'
 
 function makeStore() {
-  return configureStore({ reducer: { auth: authReducer, ui: uiReducer } })
+  return configureStore({ reducer: { auth: authReducer, ui: uiReducer, stream: streamReducer } })
 }
 
 const sampleJob = {

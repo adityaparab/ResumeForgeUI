@@ -81,6 +81,7 @@ export function AnalyzeForm() {
           label="Job Description"
           multiline
           minRows={8}
+          maxRows={8}
           placeholder="Paste the full job description here (min 20 characters)"
           error={Boolean(errors.jobDescription)}
           helperText={errors.jobDescription?.message}

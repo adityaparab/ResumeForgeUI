@@ -1,5 +1,6 @@
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
+import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded'
 import ErrorRoundedIcon from '@mui/icons-material/ErrorRounded'
 import SellRoundedIcon from '@mui/icons-material/SellRounded'
 import TipsAndUpdatesRoundedIcon from '@mui/icons-material/TipsAndUpdatesRounded'
@@ -26,6 +27,7 @@ import { useQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import { toast } from '@/components/common/toast'
 import { analysisApi } from '@/lib/api-client'
 
 interface NormalizedAnalysisReport {
@@ -101,7 +103,7 @@ function extractReport(source: unknown): NormalizedAnalysisReport | null {
     matchedKeywords: getStringList(src.strongMatchingPoints ?? src.matchedKeywords),
     missingKeywords: getStringList(
       criticalGaps.length > 0
-        ? criticalGaps.map((gap: any) => String(gap.skill ?? ''))
+        ? criticalGaps.map((gap) => String((gap as Record<string, unknown>).skill ?? ''))
         : (src.missingKeywords ?? []),
     ),
     updatedSummary: getSummary(src.impactfulProfessionalSummary),
@@ -230,6 +232,22 @@ export default function AnalysisResult() {
 
   const report = getAnalysisReport(analysis.result)
 
+  const handleDownload = async () => {
+    if (!analysisId || !analysis.resumeId) return
+    try {
+      const blob = await analysisApi.download(analysisId, analysis.resumeId)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      /* v8 ignore next */
+      a.download = `resume-optimized.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      toast.error('Could not download updated resume.')
+    }
+  }
+
   return (
     <Stack spacing={3}>
       <Box>
@@ -254,21 +272,34 @@ export default function AnalysisResult() {
         >
           <Box>
             <Typography component="h1" variant="h4">
-              Analysis Result
+              {analysis.title ??
+                (analysis.jobDescription.split('\n')[0]?.slice(0, 80) || 'Analysis Result')}
             </Typography>
-            <Typography
-              color="text.secondary"
-              sx={{ fontFamily: 'monospace', mt: 0.75 }}
-              variant="body2"
-            >
-              {analysisId}
+            <Typography color="text.secondary" sx={{ mt: 0.75 }} variant="body2">
+              {new Date(analysis.createdAt).toLocaleDateString()}
             </Typography>
           </Box>
-          <Chip
-            color={STATUS_CHIP[analysis.status] ?? 'default'}
-            label={analysis.status}
-            size="small"
-          />
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.25}
+            sx={{ alignItems: { xs: 'stretch', sm: 'center' } }}
+          >
+            <Chip
+              color={STATUS_CHIP[analysis.status] ?? 'default'}
+              label={analysis.status}
+              size="small"
+            />
+            {analysis.status === 'completed' && report && (
+              <Button
+                onClick={handleDownload}
+                startIcon={<DownloadRoundedIcon />}
+                type="button"
+                variant="outlined"
+              >
+                Download Resume
+              </Button>
+            )}
+          </Stack>
         </Stack>
       </Paper>
 

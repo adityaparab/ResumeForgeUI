@@ -11,6 +11,7 @@ export function NotificationBell() {
   const {
     jobs,
     unreadCount,
+    hasActiveItems,
     ongoingCount,
     completedCount,
     markAllAsRead,
@@ -61,7 +62,13 @@ export function NotificationBell() {
           aria-expanded={isOpen}
           onClick={(event) => setAnchorEl((current) => (current ? null : event.currentTarget))}
         >
-          <Badge badgeContent={unreadCount} color="error" invisible={unreadCount === 0} max={99}>
+          <Badge
+            badgeContent={unreadCount > 0 ? unreadCount : undefined}
+            variant={hasActiveItems && unreadCount === 0 ? 'dot' : 'standard'}
+            color="error"
+            invisible={!hasActiveItems && unreadCount === 0}
+            max={99}
+          >
             <NotificationsNoneRoundedIcon />
           </Badge>
         </IconButton>

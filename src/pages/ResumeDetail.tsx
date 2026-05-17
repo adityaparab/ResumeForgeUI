@@ -1,15 +1,16 @@
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
+﻿import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded'
 import { Alert, Box, Button, Chip, Paper, Stack, Typography } from '@mui/material'
 import type { ChipProps } from '@mui/material/Chip'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { toast } from '@/components/common/toast'
-import { EditableStructuredContent } from '@/features/resume/components/EditableStructuredContent'
-import { analysisApi, resumeApi } from '@/lib/api-client'
-import type { StructuredContent } from '@/lib/schemas/resume.schema'
+import {
+  EditableStructuredContent,
+  type PathSegment,
+} from '@/features/resume/components/EditableStructuredContent'
+import { resumeApi } from '@/lib/api-client'
 
 const STATUS_CHIP: Record<string, ChipProps['color']> = {
   completed: 'success',
@@ -22,7 +23,6 @@ export default function ResumeDetail() {
   const { resumeId } = useParams<{ resumeId: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [draftContent, setDraftContent] = useState<StructuredContent | null>(null)
 
   const {
     data: resume,
@@ -37,20 +37,13 @@ export default function ResumeDetail() {
     enabled: !!resumeId,
   })
 
-  const { data: analyses } = useQuery({
-    queryKey: ['analysis-for-resume', resumeId],
-    queryFn: () => analysisApi.list(1, 100),
-    enabled: !!resumeId,
-  })
-
   const updateResumeMutation = useMutation({
-    mutationFn: (structuredContent: StructuredContent) => {
+    mutationFn: (fields: Record<string, unknown>) => {
       if (!resumeId) throw new Error('Missing resume ID')
-      return resumeApi.updateStructuredContent(resumeId, structuredContent)
+      return resumeApi.updateResumeFields(resumeId, fields)
     },
     onSuccess: (updatedResume) => {
       queryClient.setQueryData(['resume', resumeId], updatedResume)
-      setDraftContent(updatedResume.structuredContent ?? null)
       toast.success('Resume details saved.')
     },
     onError: () => {
@@ -58,23 +51,10 @@ export default function ResumeDetail() {
     },
   })
 
-  const originalContent = resume?.structuredContent ?? null
-
-  useEffect(() => {
-    setDraftContent(originalContent)
-  }, [originalContent])
-
-  const hasAnalysisResult = Boolean(
-    analyses?.data.some(
-      (analysis) =>
-        analysis.resumeId === resumeId &&
-        analysis.status === 'completed' &&
-        Boolean(analysis.result),
-    ),
-  )
-
-  const isDirty =
-    draftContent !== null && JSON.stringify(draftContent) !== JSON.stringify(originalContent)
+  const handleSaveField = async (path: PathSegment[], value: unknown): Promise<void> => {
+    const dotPath = path.map(String).join('.')
+    await updateResumeMutation.mutateAsync({ [dotPath]: value })
+  }
 
   const handleDownload = async () => {
     if (!resumeId) return
@@ -174,9 +154,9 @@ export default function ResumeDetail() {
               label={resume.status}
               size="small"
             />
-            {resume.status === 'completed' && hasAnalysisResult && (
+            {resume.status === 'completed' && (
               <Button
-                onClick={handleDownload}
+                onClick={() => void handleDownload()}
                 startIcon={<DownloadRoundedIcon />}
                 type="button"
                 variant="outlined"
@@ -194,14 +174,11 @@ export default function ResumeDetail() {
         </Alert>
       )}
 
-      {draftContent ? (
+      {resume.structuredContent ? (
         <EditableStructuredContent
-          content={draftContent}
-          isDirty={isDirty}
-          isSubmitting={updateResumeMutation.isPending}
-          onChange={setDraftContent}
-          onReset={() => setDraftContent(originalContent)}
-          onSubmit={() => updateResumeMutation.mutate(draftContent)}
+          content={resume.structuredContent}
+          mode="edit"
+          onSaveField={handleSaveField}
         />
       ) : resume.status !== 'failed' ? (
         <Paper

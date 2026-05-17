@@ -1,4 +1,4 @@
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
+﻿import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
 import ErrorRoundedIcon from '@mui/icons-material/ErrorRounded'
 import HourglassEmptyRoundedIcon from '@mui/icons-material/HourglassEmptyRounded'
 import RadioButtonUncheckedRoundedIcon from '@mui/icons-material/RadioButtonUncheckedRounded'
@@ -82,6 +82,13 @@ const STATUS_CONFIG: Record<
   },
 }
 
+const BLINK_KF = {
+  '@keyframes rfBlink': {
+    '0%, 100%': { opacity: 1 },
+    '50%': { opacity: 0.15 },
+  },
+} as const
+
 function isActiveStatus(status: StreamStatus) {
   return status === 'connecting' || status === 'streaming'
 }
@@ -97,14 +104,14 @@ export function StreamViewer({
   const outputRef = useRef<HTMLDivElement>(null)
   const statusConfig = STATUS_CONFIG[status]
 
+  // Auto-scroll on every content change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fullText change triggers scroll
   useEffect(() => {
-    if (status === 'streaming' && fullText.length > 0) {
-      const output = outputRef.current
-      if (output) {
-        output.scrollTop = output.scrollHeight
-      }
+    const output = outputRef.current
+    if (output) {
+      output.scrollTop = output.scrollHeight
     }
-  }, [status, fullText])
+  }, [fullText])
 
   useEffect(() => {
     if (status === 'done') {
@@ -134,13 +141,43 @@ export function StreamViewer({
                 </Typography>
               )}
             </Box>
-            <Chip
-              color={statusConfig.chipColor}
-              icon={statusConfig.icon}
-              label={STATUS_LABELS[status]}
-              variant={statusConfig.variant}
-              sx={{ alignSelf: { xs: 'flex-start', sm: 'center' }, fontWeight: 700 }}
-            />
+
+            <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center' }}>
+              {/* Blinking signal dot */}
+              {status === 'streaming' && (
+                <Box
+                  aria-hidden="true"
+                  sx={{
+                    ...BLINK_KF,
+                    animation: 'rfBlink 1.2s ease-in-out infinite',
+                    bgcolor: 'success.main',
+                    borderRadius: '50%',
+                    height: 10,
+                    width: 10,
+                  }}
+                />
+              )}
+              {status === 'connecting' && (
+                <Box
+                  aria-hidden="true"
+                  sx={{
+                    ...BLINK_KF,
+                    animation: 'rfBlink 0.9s ease-in-out infinite',
+                    bgcolor: 'warning.main',
+                    borderRadius: '50%',
+                    height: 10,
+                    width: 10,
+                  }}
+                />
+              )}
+              <Chip
+                color={statusConfig.chipColor}
+                icon={statusConfig.icon}
+                label={STATUS_LABELS[status]}
+                variant={statusConfig.variant}
+                sx={{ fontWeight: 700 }}
+              />
+            </Stack>
           </Stack>
 
           {isActiveStatus(status) && (
@@ -177,8 +214,8 @@ export function StreamViewer({
             'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
           fontSize: '0.875rem',
           lineHeight: 1.7,
-          maxHeight: 'calc(100vh - 18rem)',
-          minHeight: 192,
+          height: 'calc(100vh - 28rem)',
+          minHeight: 160,
           overflowY: 'auto',
           p: { xs: 2, sm: 3 },
         }}

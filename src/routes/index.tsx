@@ -9,6 +9,7 @@ export const pageLoaders = {
   AnalysisList: () => import('@/pages/AnalysisList'),
   AnalysisResult: () => import('@/pages/AnalysisResult'),
   AnalysisStream: () => import('@/pages/AnalysisStream'),
+  CreateResume: () => import('@/pages/CreateResume'),
   Dashboard: () => import('@/pages/Dashboard'),
   Login: () => import('@/pages/Login'),
   NotFound: () => import('@/pages/NotFound'),
@@ -22,6 +23,7 @@ export const pageLoaders = {
 const AnalysisList = lazy(pageLoaders.AnalysisList)
 const AnalysisResult = lazy(pageLoaders.AnalysisResult)
 const AnalysisStream = lazy(pageLoaders.AnalysisStream)
+const CreateResume = lazy(pageLoaders.CreateResume)
 const Dashboard = lazy(pageLoaders.Dashboard)
 const Login = lazy(pageLoaders.Login)
 const NotFound = lazy(pageLoaders.NotFound)
@@ -54,6 +56,7 @@ export const routes: RouteObject[] = [
           { path: 'analysis/stream/:analysisId', element: withSuspense(<AnalysisStream />) },
           { path: 'analysis/:analysisId', element: withSuspense(<AnalysisResult />) },
           { path: 'resume', element: withSuspense(<ResumeList />) },
+          { path: 'resume/create', element: withSuspense(<CreateResume />) },
           { path: 'resume/stream/:resumeId', element: withSuspense(<ResumeStream />) },
           { path: 'resume/:resumeId', element: withSuspense(<ResumeDetail />) },
           { path: 'settings', element: withSuspense(<Settings />) },

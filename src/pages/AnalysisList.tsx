@@ -193,7 +193,7 @@ export default function AnalysisList() {
             <Table aria-label="Analysis history" sx={{ minWidth: 820 }}>
               <TableHead>
                 <TableRow>
-                  <TableCell>ID</TableCell>
+                  <TableCell>Title</TableCell>
                   <TableCell>Resume ID</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Created</TableCell>
@@ -223,13 +223,21 @@ export default function AnalysisList() {
                   analyses.map((analysis) => (
                     <TableRow hover key={analysis.id}>
                       <TableCell>
-                        <Typography
-                          color="text.secondary"
-                          variant="body2"
-                          sx={{ fontFamily: 'monospace' }}
-                        >
-                          {shortId(analysis.id)}
-                        </Typography>
+                        {analysis.status === 'completed' ? (
+                          <Typography variant="body2">
+                            {analysis.title ??
+                              (analysis.jobDescription.split('\n')[0]?.slice(0, 60) ||
+                                shortId(analysis.id))}
+                          </Typography>
+                        ) : (
+                          <Typography
+                            color="text.secondary"
+                            variant="body2"
+                            sx={{ fontFamily: 'monospace' }}
+                          >
+                            {shortId(analysis.id)}
+                          </Typography>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>

@@ -1,4 +1,5 @@
 import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded'
+import NoteAddRoundedIcon from '@mui/icons-material/NoteAddRounded'
 import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded'
 import TroubleshootRoundedIcon from '@mui/icons-material/TroubleshootRounded'
 import UploadFileRoundedIcon from '@mui/icons-material/UploadFileRounded'
@@ -116,12 +117,25 @@ export default function ResumeList() {
             Upload, process, and inspect resume extraction jobs.
           </Typography>
         </Box>
-        <Chip
-          icon={<ArticleRoundedIcon />}
-          label={`${data?.total ?? 0} total`}
-          variant="outlined"
-          sx={{ alignSelf: { xs: 'flex-start', md: 'center' } }}
-        />
+        <Stack
+          direction="row"
+          spacing={1.5}
+          sx={{ alignItems: { xs: 'flex-start', md: 'center' } }}
+        >
+          <Chip
+            icon={<ArticleRoundedIcon />}
+            label={`${data?.total ?? 0} total`}
+            variant="outlined"
+          />
+          <Button
+            onClick={() => navigate('/resume/create')}
+            startIcon={<NoteAddRoundedIcon />}
+            type="button"
+            variant="contained"
+          >
+            Create Resume
+          </Button>
+        </Stack>
       </Stack>
 
       <Box component="section" aria-label="Upload a new resume">

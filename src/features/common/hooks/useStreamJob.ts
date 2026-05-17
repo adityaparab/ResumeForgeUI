@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { store } from '@/app/store'
 import { toast } from '@/components/common/toast'
 import { API_URL } from '@/constants'
+import { clearStream, updateStream } from '@/stores/streamSlice'
 
 export type StreamStatus = 'connecting' | 'streaming' | 'done' | 'failed' | 'idle'
 
@@ -57,6 +58,7 @@ export function useStreamJob({ jobId, enabled = true }: UseStreamJobOptions): Us
   const [status, setStatus] = useState<StreamStatus>('idle')
   const [error, setError] = useState<string | null>(null)
   const esRef = useRef<EventSource | null>(null)
+  const fullTextRef = useRef('')
 
   useEffect(() => {
     if (!jobId || !enabled) return
@@ -66,30 +68,41 @@ export function useStreamJob({ jobId, enabled = true }: UseStreamJobOptions): Us
 
     setStatus('connecting')
     setChunks([])
-    setFullText('')
     setError(null)
+    fullTextRef.current = ''
+    setFullText('')
 
     const es = new EventSource(url)
     esRef.current = es
 
     es.addEventListener('history', (e: MessageEvent) => {
       const text = getStreamChunk(e.data as string)
+      fullTextRef.current = text
       setChunks(text ? [text] : [])
       setFullText(text)
       setStatus('streaming')
+      store.dispatch(updateStream({ jobId, fullText: text, status: 'streaming' }))
     })
 
     es.addEventListener('chunk', (e: MessageEvent) => {
       const chunk = getStreamChunk(e.data as string)
-      setChunks((prev) => (chunk ? [...prev, chunk] : prev))
-      setFullText((prev) => prev + chunk)
-      setStatus('streaming')
+      if (chunk) {
+        fullTextRef.current += chunk
+        const newText = fullTextRef.current
+        setChunks((prev) => [...prev, chunk])
+        setFullText(newText)
+        store.dispatch(updateStream({ jobId, fullText: newText, status: 'streaming' }))
+      }
     })
 
     es.addEventListener('done', (e: MessageEvent) => {
       const text = getStreamChunk(e.data as string)
-      if (text) setFullText(text)
+      if (text) {
+        fullTextRef.current = text
+        setFullText(text)
+      }
       setStatus('done')
+      store.dispatch(clearStream(jobId))
       es.close()
     })
 
@@ -97,6 +110,7 @@ export function useStreamJob({ jobId, enabled = true }: UseStreamJobOptions): Us
       const msg = getStreamError(e.data as string)
       setError(msg)
       setStatus('failed')
+      store.dispatch(clearStream(jobId))
       toast.error(msg)
       es.close()
     })
@@ -105,6 +119,7 @@ export function useStreamJob({ jobId, enabled = true }: UseStreamJobOptions): Us
       const msg = 'Connection error. Please check your network and try again.'
       setError(msg)
       setStatus('failed')
+      store.dispatch(clearStream(jobId))
       toast.error(msg)
       es.close()
     }
