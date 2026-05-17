@@ -33,3 +33,5 @@ coverage
 .yarn
 .vscode
 playwright-report
+.storybook
+test-results
