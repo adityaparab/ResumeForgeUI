@@ -3,6 +3,8 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localho
 export const API_VERSION = 'v1'
 export const API_URL = `${API_BASE_URL}/api/${API_VERSION}`
 
+console.log(`API URL: ${API_URL}`)
+
 export const AUTH_TOKEN_KEY = 'accessToken'
 export const REFRESH_TOKEN_KEY = 'refreshToken'
 export const THEME_KEY = 'theme'
