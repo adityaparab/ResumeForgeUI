@@ -1,3 +1,7 @@
+# Set as environment variables for the build
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_APP_NAME=$VITE_APP_NAME
+
 # Build stage
 FROM node:22-alpine AS builder
 
