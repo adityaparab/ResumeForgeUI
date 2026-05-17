@@ -147,7 +147,7 @@ export function useNotifications() {
           id: analysis.id,
           type: 'analysis',
           status: normalizeStatus(analysis.status as ApiStatus),
-          label: analysis.title ?? analysis.jobDescription.slice(0, 60),
+          label: analysis.result?.analysisReport.title ?? analysis.jobDescription.slice(0, 60),
           createdAt: analysis.createdAt,
         }),
       )
