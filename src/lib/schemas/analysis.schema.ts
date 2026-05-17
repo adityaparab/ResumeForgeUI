@@ -74,6 +74,7 @@ export type AnalysisResult = z.infer<typeof AnalysisResultSchema>
 export const AnalysisSchema = z.object({
   id: z.string(),
   _id: z.string().optional(),
+  title: z.string().optional(),
   userId: z.string(),
   resumeId: z.string(),
   jobDescription: z.string(),
